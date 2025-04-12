@@ -60,6 +60,15 @@ export default [
           message: '"it" should start with "should"',
         },
       ],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_' },
+      ],
+    },
+    settings: {
+      'import/resolver': {
+        typescript: {},
+      },
     },
   },
 ];
