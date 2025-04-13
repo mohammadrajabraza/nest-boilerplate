@@ -1,23 +1,11 @@
 import path from 'node:path';
-
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from '@/utils/snake-naming';
 import { AllConfigType } from '@/config/config.type';
 import { DatabaseType } from 'typeorm';
-
-type NestedKeyOf<T, Prefix extends string = ''> = T extends object
-  ? {
-      [K in keyof T & string]: T[K] extends object
-        ?
-            | NestedKeyOf<T[K], Prefix extends '' ? K : `${Prefix}.${K}`>
-            | (Prefix extends '' ? K : `${Prefix}.${K}`)
-        : Prefix extends ''
-          ? K
-          : `${Prefix}.${K}`;
-    }[keyof T & string]
-  : never;
+import { NestedKeyOf } from '@/types';
 
 @Injectable()
 export class ApiConfigService {
@@ -56,7 +44,6 @@ export class ApiConfigService {
       entities,
       migrations,
       type: this.get('database.type') as DatabaseType,
-      url: this.get('database.url'),
       host: this.get('database.host'),
       port: this.get('database.port'),
       username: this.get('database.username'),
@@ -97,7 +84,7 @@ export class ApiConfigService {
     const value = this.configService.get(key, { infer: true });
 
     if (value == null) {
-      throw new Error(`${key} environment variable does not set`); // probably we should call process.exit() too to avoid locking the service
+      throw new Error(`${key} environment variable does not set`);
     }
 
     return value;

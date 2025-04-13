@@ -1,3 +1,4 @@
+import { SnakeNamingStrategy } from '@/utils/snake-naming';
 import 'reflect-metadata';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
@@ -17,6 +18,7 @@ export const AppDataSource = new DataSource({
   logging: process.env.NODE_ENV !== 'production',
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
+  namingStrategy: new SnakeNamingStrategy(),
   cli: {
     entitiesDir: 'src',
     subscribersDir: 'subscriber',

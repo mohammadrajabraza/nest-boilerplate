@@ -5,23 +5,17 @@ import {
   Min,
   Max,
   IsString,
-  ValidateIf,
   IsBoolean,
+  IsIn,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import validateConfig from '@/utils/validate-config';
 import { DatabaseConfig } from './config.type';
 
 class EnvironmentVariablesValidator {
-  @ValidateIf((envValues) => envValues.DATABASE_URL)
-  @IsString()
-  DATABASE_URL: string;
-
-  @ValidateIf((envValues) => !envValues.DATABASE_URL)
   @IsString()
   DATABASE_TYPE: string;
 
-  @ValidateIf((envValues) => !envValues.DATABASE_URL)
   @IsString()
   DATABASE_HOST: string;
   @IsOptional()
@@ -50,21 +44,19 @@ class EnvironmentVariablesValidator {
   @Max(65535, { message: 'DATABASE_PORT must not exceed 65535' })
   DATABASE_PORT: number;
 
-  @ValidateIf((envValues) => !envValues.DATABASE_URL)
   @IsString()
   DATABASE_PASSWORD: string;
 
-  @ValidateIf((envValues) => !envValues.DATABASE_URL)
   @IsString()
   DATABASE_NAME: string;
 
-  @ValidateIf((envValues) => !envValues.DATABASE_URL)
   @IsString()
   DATABASE_USERNAME: string;
 
   @IsOptional()
-  @IsBoolean()
-  DATABASE_SYNCHRONIZE: boolean;
+  @IsString()
+  @IsIn(['true', 'false'])
+  DATABASE_SYNCHRONIZE: string;
 
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
@@ -73,8 +65,9 @@ class EnvironmentVariablesValidator {
   DATABASE_MAX_CONNECTIONS: number;
 
   @IsOptional()
-  @IsBoolean()
-  DATABASE_SSL_ENABLED: boolean;
+  @IsString()
+  @IsIn(['true', 'false'])
+  DATABASE_SSL_ENABLED: string;
 
   @IsOptional()
   @IsBoolean()
@@ -96,20 +89,17 @@ class EnvironmentVariablesValidator {
 export default registerAs<DatabaseConfig>('database', () => {
   const config = validateConfig(process.env, EnvironmentVariablesValidator);
 
-  console.log(config);
-
   return {
     isDocumentDatabase: ['mongodb'].includes(config.DATABASE_TYPE ?? ''),
-    url: config.DATABASE_URL,
     type: config.DATABASE_TYPE,
     host: config.DATABASE_HOST,
     port: config.DATABASE_PORT ?? 5432,
     password: config.DATABASE_PASSWORD,
     name: config.DATABASE_NAME,
     username: config.DATABASE_USERNAME,
-    synchronize: config.DATABASE_SYNCHRONIZE,
+    synchronize: config.DATABASE_SYNCHRONIZE === 'true',
     maxConnections: config.DATABASE_MAX_CONNECTIONS ?? 100, // Use transformed number
-    sslEnabled: config.DATABASE_SSL_ENABLED,
+    sslEnabled: config.DATABASE_SSL_ENABLED === 'true',
     rejectUnauthorized: config.DATABASE_REJECT_UNAUTHORIZED,
     ca: config.DATABASE_CA,
     key: config.DATABASE_KEY,

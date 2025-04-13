@@ -6,8 +6,6 @@ import { appConfig, databaseConfig } from './config';
 import { SharedModule } from './shared/shared.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfigService } from './database/typeorm-config.service';
-import { DataSource, DataSourceOptions } from 'typeorm';
-import { addTransactionalDataSource } from 'typeorm-transactional';
 import { ApiConfigService } from './shared/services/api-config.service';
 
 @Module({
@@ -21,15 +19,6 @@ import { ApiConfigService } from './shared/services/api-config.service';
     TypeOrmModule.forRootAsync({
       imports: [SharedModule],
       useClass: TypeOrmConfigService,
-      dataSourceFactory: async (options: DataSourceOptions) => {
-        if (!options) {
-          throw new Error('Invalid options passed');
-        }
-
-        return Promise.resolve(
-          addTransactionalDataSource(new DataSource(options)),
-        );
-      },
       inject: [ApiConfigService],
     }),
   ],
