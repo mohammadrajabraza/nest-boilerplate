@@ -3,6 +3,8 @@ import type { ApiPropertyOptions } from '@nestjs/swagger';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  // ArrayMaxSize,
+  // ArrayMinSize,
   IsBoolean,
   IsDate,
   IsDefined,
@@ -23,7 +25,7 @@ import {
 } from 'class-validator';
 
 // import { supportedLanguageCount } from '../constants/language-code.ts';
-import type { Constructor } from '@/types';
+import type { Constructor } from '../types';
 import { ApiEnumProperty, ApiUUIDProperty } from './property.decorator';
 import {
   PhoneNumberSerializer,

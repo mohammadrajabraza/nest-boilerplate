@@ -2,7 +2,7 @@ import { Transform } from 'class-transformer';
 import { parsePhoneNumberWithError } from 'libphonenumber-js';
 import _ from 'lodash';
 
-// import { GeneratorProvider } from '@/providers/generator.provider';
+// import { GeneratorProvider } from '../providers/generator.provider.ts';
 
 /**
  * @description trim spaces from start and end, replace multiple spaces with one.
@@ -131,6 +131,26 @@ export function ToUpperCase(): PropertyDecorator {
     },
   );
 }
+
+// export function S3UrlParser(): PropertyDecorator {
+//   return Transform((params) => {
+//     const key = params.value as string;
+
+//     switch (params.type) {
+//       case TransformationType.CLASS_TO_PLAIN: {
+//         return GeneratorProvider.getS3PublicUrl(key);
+//       }
+
+//       case TransformationType.PLAIN_TO_CLASS: {
+//         return GeneratorProvider.getS3Key(key);
+//       }
+
+//       default: {
+//         return key;
+//       }
+//     }
+//   });
+// }
 
 export function PhoneNumberSerializer(): PropertyDecorator {
   return Transform(

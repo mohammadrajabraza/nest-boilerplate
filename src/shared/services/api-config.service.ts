@@ -23,12 +23,31 @@ export class ApiConfigService {
     return this.nodeEnv === 'test';
   }
 
+  get documentationEnabled(): boolean {
+    return this.nodeEnv !== 'production';
+  }
+
+  get localeMapping(): Record<string, string> {
+    return {
+      en: 'en_US',
+      'en-US': 'en_US',
+      en_US: 'en_US',
+      ru: 'ru_RU',
+      'ru-RU': 'ru_RU',
+      ru_RU: 'ru_RU',
+    };
+  }
+
   get nodeEnv(): string {
     return this.get('app.nodeEnv');
   }
 
   get fallbackLanguage(): string {
     return this.get('app.fallbackLanguage');
+  }
+
+  get languageHeader(): string {
+    return this.get('app.headerLanguage');
   }
 
   get postgresConfig(): TypeOrmModuleOptions {
