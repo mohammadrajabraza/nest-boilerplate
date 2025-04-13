@@ -6,6 +6,7 @@ import { SnakeNamingStrategy } from '@/utils/snake-naming';
 import { AllConfigType } from '@/config/config.type';
 import { DatabaseType } from 'typeorm';
 import { NestedKeyOf } from '@/types';
+import { ThrottlerOptions } from '@nestjs/throttler';
 
 @Injectable()
 export class ApiConfigService {
@@ -35,6 +36,14 @@ export class ApiConfigService {
       ru: 'ru_RU',
       'ru-RU': 'ru_RU',
       ru_RU: 'ru_RU',
+    };
+  }
+
+  get throttlerConfigs(): ThrottlerOptions {
+    return {
+      ttl: this.get('app.throttler.ttl'),
+      limit: this.get('app.throttler.limit'),
+      // storage: new ThrottlerStorageRedisService(new Redis(this.redis)),
     };
   }
 

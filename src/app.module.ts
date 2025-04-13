@@ -16,10 +16,18 @@ import {
 import { ClsModule, ClsMiddleware } from 'nestjs-cls';
 import path from 'path';
 import { TestController } from './test/test.controller';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
     SharedModule,
+    ThrottlerModule.forRootAsync({
+      imports: [SharedModule],
+      useFactory: (configService: ApiConfigService) => ({
+        throttlers: [configService.throttlerConfigs],
+      }),
+      inject: [ApiConfigService],
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig, databaseConfig],

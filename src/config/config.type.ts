@@ -8,6 +8,10 @@ export type AppConfig = {
   apiPrefix: string;
   fallbackLanguage: string;
   headerLanguage: string;
+  throttler: {
+    ttl: number;
+    limit: number;
+  };
 };
 
 export type DatabaseConfig = {
