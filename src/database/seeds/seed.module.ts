@@ -6,16 +6,17 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { TypeOrmConfigService } from '../typeorm-config.service';
 import { RoleSeedModule } from './role/role-seed.module';
 import { UserSeedModule } from './user/user-seed.module';
-import databaseConfig from '@/config/database.config';
-import appConfig from '@/config/app.config';
 import { CompanySeedModule } from './company/company-seed.module';
 import { SharedModule } from '@/shared/shared.module';
+import config from '@/config';
+import { AcceptLanguageResolver, I18nModule } from 'nestjs-i18n';
+import path from 'path';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [databaseConfig, appConfig],
+      load: config,
       envFilePath: ['.env'],
     }),
     TypeOrmModule.forRootAsync({
@@ -23,6 +24,17 @@ import { SharedModule } from '@/shared/shared.module';
       dataSourceFactory: async (options: DataSourceOptions) => {
         return new DataSource(options).initialize();
       },
+    }),
+    I18nModule.forRootAsync({
+      useFactory: () => {
+        return {
+          fallbackLanguage: 'en',
+          loaderOptions: {
+            path: path.resolve(__dirname, '../../i18n/'),
+          },
+        };
+      },
+      resolvers: [AcceptLanguageResolver],
     }),
     CompanySeedModule,
     RoleSeedModule,

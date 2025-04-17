@@ -4,8 +4,13 @@ import { CqrsModule } from '@nestjs/cqrs';
 
 import { ApiConfigService } from './services/api-config.service';
 import { TranslationService } from './services/translation.service';
+import { HashingService } from './services/hashing.service';
 
-const providers: Provider[] = [ApiConfigService, TranslationService];
+const providers: Provider[] = [
+  ApiConfigService,
+  TranslationService,
+  HashingService,
+];
 
 @Global()
 @Module({

@@ -45,7 +45,7 @@ export class AbstractDto {
         return translationEntity[key];
       }
     } else {
-      this.translations = entity.translations?.toDtos();
+      this.translations = entity.translations?.map((t) => t.toDto());
     }
   }
 }

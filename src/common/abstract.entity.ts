@@ -25,13 +25,13 @@ export abstract class AbstractEntity<
   id!: Uuid;
 
   @CreateDateColumn({
-    type: 'timestamp',
+    type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP',
   })
   createdAt!: Date;
 
   @UpdateDateColumn({
-    type: 'timestamp',
+    type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP', // Initial default for updates
     onUpdate: 'CURRENT_TIMESTAMP', // Update to current timestamp
   })

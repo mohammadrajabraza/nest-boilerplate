@@ -1,3 +1,6 @@
+import { TokenType } from '@/constants/token-type';
+import { Algorithm } from 'jsonwebtoken';
+
 export type AppConfig = {
   nodeEnv: string;
   name: string;
@@ -12,6 +15,30 @@ export type AppConfig = {
     ttl: number;
     limit: number;
   };
+};
+
+export type AuthConfig = {
+  [TokenType.ACCESS]: {
+    secret: string;
+    expiry: number;
+  };
+  [TokenType.REFRESH]: {
+    secret: string;
+    expiry: number;
+  };
+  [TokenType.PASSWORD_RESET]: {
+    secret: string;
+    expiry: number;
+  };
+  [TokenType.CONFIRM_EMAIL]: {
+    secret: string;
+    expiry: number;
+    redirect: {
+      success: string;
+      error: string;
+    };
+  };
+  algorithm: Algorithm;
 };
 
 export type DatabaseConfig = {
@@ -32,7 +59,25 @@ export type DatabaseConfig = {
   cert?: string;
 };
 
+export type MailConfig = {
+  port: number;
+  host?: string;
+  user?: string;
+  password?: string;
+  defaultEmail?: string;
+  defaultName?: string;
+  ignoreTLS: boolean;
+  secure: boolean;
+  requireTLS: boolean;
+  sendGrid: {
+    apiKey: string;
+    sender: string;
+  };
+};
+
 export type AllConfigType = {
   app: AppConfig;
   database: DatabaseConfig;
+  auth: AuthConfig;
+  mail: MailConfig;
 };

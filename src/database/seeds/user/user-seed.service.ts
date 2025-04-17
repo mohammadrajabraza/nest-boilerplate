@@ -8,6 +8,7 @@ import { UserEntity } from '@/modules/users/infrastructure/persistence/entities/
 import { RoleEntity } from '@/modules/roles/infrastructure/persistence/entities/role.entity';
 import { plainToInstance } from 'class-transformer';
 import { CompanyEntity } from '@/modules/companies/infrastructure/persistence/entities/company.entity';
+import { UserRoleEntity } from '@/modules/roles/infrastructure/persistence/entities/user-role.entity';
 
 @Injectable()
 export class UserSeedService {
@@ -20,6 +21,9 @@ export class UserSeedService {
 
     @InjectRepository(CompanyEntity)
     private companyRepository: Repository<CompanyEntity>,
+
+    @InjectRepository(UserRoleEntity)
+    private userRoleRepository: Repository<UserRoleEntity>,
   ) {}
 
   private roleMap = new Map<string, RoleEntity>();
@@ -91,34 +95,36 @@ export class UserSeedService {
       const hashedPassword = await bcrypt.hash(data.password, 10);
 
       const userExists = await this.userRepository.findOne({
-        where: { email: data.email, roleId: role.id },
+        where: { email: data.email },
       });
 
       if (userExists) {
-        return await this.userRepository.save(
-          plainToInstance(UserEntity, {
-            ...userExists,
+        await this.userRepository.update(
+          { id: userExists.id },
+          {
             firstName: data.firstName,
             lastName: data.lastName,
             email: data.email,
             phone: data.phone,
             password: hashedPassword,
-            roleId: role.id,
             companyId: company.id,
-          }),
+          },
         );
+        return;
       }
 
-      return await this.userRepository.save(
+      const user = await this.userRepository.save(
         plainToInstance(UserEntity, {
           firstName: data.firstName,
           lastName: data.lastName,
           email: data.email,
           phone: data.phone,
           password: hashedPassword,
-          roleId: role.id,
           companyId: company.id,
         }),
+      );
+      await this.userRoleRepository.save(
+        plainToInstance(UserRoleEntity, { userId: user.id, roleId: role.id }),
       );
     } catch (error) {
       Logger.error(error);

@@ -2,7 +2,7 @@ import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { appConfig, databaseConfig } from './config';
+import config from './config';
 import { SharedModule } from './shared/shared.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfigService } from './database/typeorm-config.service';
@@ -17,10 +17,16 @@ import { ClsModule, ClsMiddleware } from 'nestjs-cls';
 import path from 'path';
 import { TestController } from './test/test.controller';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { AuthModule } from './modules/auth/auth.module';
+import { UserModule } from './modules/users/user.module';
+import { RoleModule } from './modules/roles/role.module';
+import { TokenModule } from './modules/token/token.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
     SharedModule,
+    MailModule,
     ThrottlerModule.forRootAsync({
       imports: [SharedModule],
       useFactory: (configService: ApiConfigService) => ({
@@ -30,7 +36,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     }),
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig],
+      load: config,
       envFilePath: ['.env'],
     }),
     ClsModule.forRoot({
@@ -70,6 +76,10 @@ import { ThrottlerModule } from '@nestjs/throttler';
       imports: [SharedModule],
       inject: [ApiConfigService],
     }),
+    AuthModule,
+    UserModule,
+    RoleModule,
+    TokenModule,
   ],
   controllers: [AppController, TestController],
   providers: [AppService],

@@ -3,10 +3,12 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from '@/utils/snake-naming';
-import { AllConfigType } from '@/config/config.type';
+import { AllConfigType, AuthConfig } from '@/config/config.type';
 import { DatabaseType } from 'typeorm';
 import { NestedKeyOf } from '@/types';
 import { ThrottlerOptions } from '@nestjs/throttler';
+import { TokenType } from '@/constants/token-type';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 @Injectable()
 export class ApiConfigService {
@@ -47,6 +49,38 @@ export class ApiConfigService {
     };
   }
 
+  get apiPrefix() {
+    return this.get('app.apiPrefix');
+  }
+
+  get sendGridConfig() {
+    return {
+      apiKey: this.get('mail.sendGrid.apiKey'),
+      sender: this.get('mail.sendGrid.sender'),
+    };
+  }
+
+  get mailConfig(): SMTPTransport.Options {
+    return {
+      host: this.get('mail.host'),
+      port: this.get('mail.port'),
+      ignoreTLS: this.get('mail.ignoreTLS'),
+      secure: this.get('mail.secure'),
+      requireTLS: this.get('mail.requireTLS'),
+      auth: {
+        user: this.get('mail.user'),
+        pass: this.get('mail.password'),
+      },
+    };
+  }
+
+  get defaultMail(): { name: string; email: string } {
+    return {
+      name: this.get('mail.defaultName'),
+      email: this.get('mail.defaultEmail'),
+    };
+  }
+
   get nodeEnv(): string {
     return this.get('app.nodeEnv');
   }
@@ -59,6 +93,32 @@ export class ApiConfigService {
     return this.get('app.headerLanguage');
   }
 
+  get authConfig(): AuthConfig {
+    return {
+      [TokenType.ACCESS]: {
+        secret: this.get('auth.access.secret'),
+        expiry: this.get('auth.access.expiry'),
+      },
+      [TokenType.REFRESH]: {
+        secret: this.get('auth.refresh.secret'),
+        expiry: this.get('auth.refresh.expiry'),
+      },
+      [TokenType.CONFIRM_EMAIL]: {
+        secret: this.get('auth.refresh.secret'),
+        expiry: this.get('auth.refresh.expiry'),
+        redirect: {
+          success: this.get('auth.confirm-email.redirect.success'),
+          error: this.get('auth.confirm-email.redirect.error'),
+        },
+      },
+      [TokenType.PASSWORD_RESET]: {
+        secret: this.get('auth.refresh.secret'),
+        expiry: this.get('auth.refresh.expiry'),
+      },
+      algorithm: this.get('auth.algorithm'),
+    };
+  }
+
   get postgresConfig(): TypeOrmModuleOptions {
     const entities = [
       path.join(__dirname, `../../modules/**/*.entity{.ts,.js}`),
@@ -68,9 +128,14 @@ export class ApiConfigService {
       path.join(__dirname, `../../database/migrations/*{.ts,.js}`),
     ];
 
+    // const subscribers = [
+    //   path.join(__dirname, '../../modules/**/*.subscriber{.ts,.js}'),
+    // ];
+
     return {
       entities,
       migrations,
+      // subscribers,
       type: this.get('database.type') as DatabaseType,
       host: this.get('database.host'),
       port: this.get('database.port'),
@@ -106,6 +171,14 @@ export class ApiConfigService {
       name: this.get('app.name'),
       port: this.get('app.port'),
     };
+  }
+
+  get frontendDomain() {
+    return this.get('app.frontendDomain');
+  }
+
+  get workingDirectory() {
+    return this.get('app.workingDirectory');
   }
 
   private get<TKey extends NestedKeyOf<AllConfigType>>(key: TKey) {

@@ -1,13 +1,15 @@
 import { AbstractDto } from '@/common/dto/abstract.dto';
 import {
-  BooleanFieldOptional,
   EmailFieldOptional,
+  EnumFieldOptional,
   PhoneFieldOptional,
   StringFieldOptional,
 } from '@/decorators/field.decorator';
 import type { UserEntity } from '../infrastructure/persistence/entities/user.entity';
+import { RoleType } from '@/constants/role-type';
+import { isRole } from '@/utils/is-role';
 
-export type UserDtoOptions = Partial<{ isActive: boolean }>;
+export type UserDtoOptions = Partial<{ role: RoleType }>;
 
 export class UserDto extends AbstractDto {
   @StringFieldOptional({ nullable: true })
@@ -22,8 +24,8 @@ export class UserDto extends AbstractDto {
   @PhoneFieldOptional({ nullable: true })
   phone?: string | null;
 
-  @BooleanFieldOptional()
-  isActive?: boolean;
+  @EnumFieldOptional(() => RoleType, { nullable: true })
+  role: RoleType;
 
   constructor(user: UserEntity, options?: UserDtoOptions) {
     super(user);
@@ -31,6 +33,15 @@ export class UserDto extends AbstractDto {
     this.lastName = user.lastName;
     this.email = user.email;
     this.phone = user.phone;
-    this.isActive = options?.isActive;
+
+    if (user.userRoles && user.userRoles.length > 0) {
+      const role =
+        user.userRoles.find(
+          (userRole) => userRole.role.name === options?.role,
+        ) ?? null;
+      this.role = isRole(role?.role.name || null);
+    } else {
+      throw new Error('Invalid role');
+    }
   }
 }
