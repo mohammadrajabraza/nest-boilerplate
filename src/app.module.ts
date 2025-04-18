@@ -22,6 +22,8 @@ import { UserModule } from './modules/users/user.module';
 import { RoleModule } from './modules/roles/role.module';
 import { TokenModule } from './modules/token/token.module';
 import { MailModule } from './mail/mail.module';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './guards/auth.guard';
 
 @Module({
   imports: [
@@ -82,7 +84,7 @@ import { MailModule } from './mail/mail.module';
     TokenModule,
   ],
   controllers: [AppController, TestController],
-  providers: [AppService],
+  providers: [AppService, { provide: APP_GUARD, useClass: AuthGuard }],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

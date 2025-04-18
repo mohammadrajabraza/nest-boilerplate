@@ -2,22 +2,19 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { AbstractEntity } from '@/common/abstract.entity';
 import { UserEntity } from '@/modules/users/infrastructure/persistence/entities/user.entity';
 import { UseDto } from '@/decorators/use-dto.decorator';
-import { SessionDto } from '@/modules/auth/domain/session.dto';
+import { AuthAuditLogDto } from '@/modules/auth/domain/auth-audit-log.dto';
 
-@Entity({ name: 'sessions' })
-@UseDto(SessionDto)
-export class SessionEntity extends AbstractEntity<SessionDto> {
+@Entity({ name: 'auth_audit_logs' })
+@UseDto(AuthAuditLogDto)
+export class AuthAuditLogEntity extends AbstractEntity<AuthAuditLogDto> {
   @Column({ nullable: false, type: 'text' })
-  accessToken: string;
-
-  @Column({ nullable: false, type: 'text' })
-  refreshToken: string;
+  eventType: string;
 
   @Column({ nullable: true, type: 'text' })
-  deviceToken: string | null;
+  deviceInfo: string | null;
 
   @Column({ nullable: true, type: 'varchar' })
-  timeZone: string | null;
+  ipAddress: string | null;
 
   @Column({ nullable: false, type: 'uuid' })
   userId: string;
@@ -27,25 +24,12 @@ export class SessionEntity extends AbstractEntity<SessionDto> {
     type: 'timestamptz',
     default: () => 'CURRENT_TIMESTAMP',
   })
-  loginAt: Date | string;
-
-  @Column({
-    nullable: true,
-    type: 'timestamptz',
-  })
-  logoutAt: Date | string | null;
-
-  @Column({
-    nullable: false,
-    default: false,
-    type: 'boolean',
-  })
-  isLoggedIn: boolean;
+  eventTimestamp: Date | string;
 
   @JoinColumn({
     name: 'user_id',
     referencedColumnName: 'id',
-    foreignKeyConstraintName: 'user_session_fkey',
+    foreignKeyConstraintName: 'user_auth_audit_log_fkey',
   })
   @ManyToOne(() => UserEntity, (user) => user.sessions)
   user: UserEntity;

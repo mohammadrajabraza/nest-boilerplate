@@ -25,7 +25,9 @@ import { UserRoleEntity } from '../roles/infrastructure/persistence/entities/use
 import { MailModule } from '@/mail/mail.module';
 import { MailService } from '@/mail/mail.service';
 import { ProfileSettingEntity } from '../users/infrastructure/persistence/entities/profile-setting.entity';
+import { SessionEntity } from './infrastructure/persistence/entities/session.entity';
 import { UserSubscriber } from './infrastructure/persistence/subscribers/user.subscriber';
+import { JwtRefreshStrategy } from './strategies/jwt-refresh.startegy';
 
 @Module({
   imports: [
@@ -36,6 +38,7 @@ import { UserSubscriber } from './infrastructure/persistence/subscribers/user.su
       CompanyEntity,
       UserRoleEntity,
       ProfileSettingEntity,
+      SessionEntity,
     ]),
     forwardRef(() => UserModule),
     forwardRef(() => RoleModule),
@@ -63,6 +66,7 @@ import { UserSubscriber } from './infrastructure/persistence/subscribers/user.su
     AuthService,
     ApiConfigService,
     JwtAccessStrategy,
+    JwtRefreshStrategy,
     UserService,
     RoleService,
     HashingService,

@@ -3,6 +3,7 @@ import {
   EmailField,
   EnumField,
   PasswordField,
+  StringFieldOptional,
 } from '@/decorators/field.decorator';
 
 export class EmailLoginBodyDto {
@@ -14,4 +15,10 @@ export class EmailLoginBodyDto {
 
   @EnumField(() => RoleType, { swagger: true })
   role: RoleType;
+
+  @StringFieldOptional({ swagger: true })
+  deviceToken: string | null;
+
+  @StringFieldOptional({ swagger: true })
+  timeZone: string | null;
 }

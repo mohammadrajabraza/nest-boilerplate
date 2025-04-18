@@ -24,6 +24,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TokenEntity } from './infrastructure/persistence/entities/token.entity';
 import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
+import { TokenDto } from './dtos/token.dto';
 
 @Injectable()
 export class TokenService {
@@ -34,7 +35,7 @@ export class TokenService {
     private tokenRepository: Repository<TokenEntity>,
   ) {}
 
-  private async createToken({
+  public async createToken({
     token,
     tokenType,
     expiresIn,
@@ -64,7 +65,16 @@ export class TokenService {
     }
   }
 
-  private async getToken(token: string, tokenType: TokenType) {
+  public async revokeToken(token: TokenDto) {
+    try {
+      await this.tokenRepository.update({ id: token.id }, { isRevoked: true });
+    } catch (error) {
+      Logger.error(error);
+      throw new InternalServerErrorException(errorMessage.TOKEN.REVOKE_FAILED);
+    }
+  }
+
+  public async getToken(token: string, tokenType: TokenType) {
     try {
       const tokenEntity = await this.tokenRepository.findOne({
         where: { token },
@@ -179,8 +189,7 @@ export class TokenService {
   }
 
   public async verifyRefreshToken(token: string) {
-    const { payload } = await this.verifyToken(token, TokenType.REFRESH);
-    return payload;
+    return await this.verifyToken(token, TokenType.REFRESH);
   }
 
   public async signConfirmEmailToken(payload: ConfirmEmailPayload) {
@@ -193,8 +202,7 @@ export class TokenService {
       TokenType.CONFIRM_EMAIL
     >(token, TokenType.CONFIRM_EMAIL);
 
-    tokenDoc.isRevoked = true;
-    await this.tokenRepository.save(tokenDoc);
+    await this.revokeToken(tokenDoc.toDto());
 
     return payload;
   }
@@ -209,8 +217,7 @@ export class TokenService {
       TokenType.PASSWORD_RESET
     >(token, TokenType.PASSWORD_RESET);
 
-    tokenDoc.isRevoked = true;
-    await this.tokenRepository.save(tokenDoc);
+    await this.revokeToken(tokenDoc.toDto());
 
     return payload;
   }

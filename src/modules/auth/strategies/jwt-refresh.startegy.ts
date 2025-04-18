@@ -1,21 +1,21 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy, StrategyOptionsWithRequest } from 'passport-jwt';
-import { TokenType } from '@/constants/token-type';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Request } from 'express';
+import { StrategyName } from '@/constants/strategy-name';
+import { JwtPayload, RefreshPayload } from '@/types/jwt';
 import { ApiConfigService } from '@/shared/services/api-config.service';
 import { UserService } from '@/modules/users/user.service';
-import { StrategyName } from '@/constants/strategy-name';
-import type { Request } from 'express';
-import errorMessage from '@/constants/error-message';
 import { AuthService } from '../auth.service';
-import { AccessPayload, JwtPayload } from '@/types/jwt';
+import { TokenType } from '@/constants/token-type';
+import errorMessage from '@/constants/error-message';
 import { TokenService } from '@/modules/token/token.service';
 
 @Injectable()
-export class JwtAccessStrategy extends PassportStrategy<
+export class JwtRefreshStrategy extends PassportStrategy<
   typeof Strategy,
-  AccessPayload
->(Strategy, StrategyName.JWT_ACCESS) {
+  RefreshPayload
+>(Strategy, StrategyName.JWT_REFRESH) {
   constructor(
     private apiConfigService: ApiConfigService,
     private userService: UserService,
@@ -23,39 +23,36 @@ export class JwtAccessStrategy extends PassportStrategy<
     private tokenService: TokenService,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: apiConfigService.authConfig.access.secret,
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req: Request) => (req?.headers['x-refresh-token'] as string) || null,
+      ]),
+      secretOrKey: apiConfigService.authConfig.refresh.secret,
       algorithms: [apiConfigService.authConfig.algorithm],
       passReqToCallback: true,
-    } as StrategyOptionsWithRequest);
+    });
   }
 
-  async validate(
-    req: Request,
-    { payload }: { payload: JwtPayload },
-  ): Promise<AccessPayload> {
-    const token = req.headers.authorization?.replace('Bearer ', '').trim();
+  async validate(req: Request, { payload }: { payload: JwtPayload }) {
+    const token = req.headers['x-refresh-token'];
 
-    if (!token) {
-      throw new UnauthorizedException(errorMessage.TOKEN.NOT_FOUND);
+    if (!token || typeof token !== 'string') {
+      throw new UnauthorizedException(errorMessage.TOKEN.REFRESH_NOT_FOUND);
     }
 
-    // Validate token type
-    if (payload.type !== TokenType.ACCESS) {
+    if (payload.type !== TokenType.REFRESH) {
       throw new UnauthorizedException(errorMessage.TOKEN.INVALID_TYPE);
     }
 
-    const tokenDoc = await this.tokenService.getToken(token, TokenType.ACCESS);
+    const tokenDoc = await this.tokenService.getToken(token, TokenType.REFRESH);
 
-    // Verify user exists
     const user = await this.userService.findOne({
       id: payload.userId,
       role: payload.role,
     });
 
     const session = await this.authService.checkSession({
-      accessToken: token,
       userId: user.id,
+      refreshToken: token,
     });
 
     return {

@@ -20,15 +20,23 @@ const ErrorMessage = {
     NOT_FOUND: 'Token not found!',
     GET_TOKEN_FAILED: 'Failed to get token',
     EXPIRED: 'Token has been expired',
+    REFRESH_NOT_FOUND: 'Refresh token not found!',
+    REVOKE_FAILED: 'Token revokation failed',
   },
   AUTH: {
     INVALID_CREDENTIALS: 'Invalid email or password',
     INVALID_ROLE: 'Invalid role',
     EMAIL_NOT_VERIFIED: 'Email not verified',
     EMAIL_ALREADY_VERIFIED: 'Email already verified',
+    LOGOUT_FAILED: 'Failed to logout',
   },
   PROFILE_SETTING: {
     NOT_FOUND: 'User profile setting not found!',
+  },
+  SESSION: {
+    NOT_FOUND: 'Session not found!',
+    UPDATE_FAILED: 'Session update failed',
+    ALREAD_LOGOUT: 'Session already logout',
   },
 };
 

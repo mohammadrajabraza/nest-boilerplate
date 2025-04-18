@@ -8,13 +8,13 @@ import {
   Post,
   Query,
   Redirect,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { EmailLoginBodyDto } from './dtos/body/email-login.dto';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { EmailLoginResponseDto } from './dtos/response/email-login.dto';
 import { TokenService } from '../token/token.service';
-import { TokenType } from '@/constants/token-type';
 import { EmailSignupBodyDto } from './dtos/body/email-signup.dto';
 import { LoginMapper } from './infrastructure/persistence/mapper/login.mapper';
 import { SignupMapper } from './infrastructure/persistence/mapper/signup.mapper';
@@ -30,6 +30,18 @@ import { ForgotPasswordResponseDto } from './dtos/response/forgot-password.dto';
 import { ResetPasswordQueryDto } from './dtos/query/reset-password.dto';
 import { ResetPasswordBodyDto } from './dtos/body/reset-password.dto';
 import { ResetPasswordResponseDto } from './dtos/response/reset-password.dto';
+import { CurrentUser } from '@/decorators/current-user.decorator';
+import { UserDto } from '../users/dtos/user.dto';
+import { GetMeResponseDto } from './dtos/response/get-me.dto';
+import { Public } from '@/decorators/public.decorator';
+import { RefreshGuard } from '@/guards/refresh.guard';
+import { CurrentSession } from '@/decorators/current-session.decorator';
+import { SessionDto } from './domain/session.dto';
+import { RefreshTokenBody } from './dtos/body/refresh-token.dto';
+import { RefreshTokenMapper } from './infrastructure/persistence/mapper/refresh.mapper';
+import { CurrentToken } from '@/decorators/current-token.decorator';
+import { TokenDto } from '../token/dtos/token.dto';
+import { LogoutResponseDto } from './dtos/response/logout.dto';
 
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
@@ -40,6 +52,7 @@ export class AuthController {
     private apiConfigService: ApiConfigService,
   ) {}
 
+  @Public()
   @Post('email/login')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
@@ -51,23 +64,21 @@ export class AuthController {
       email: body.email,
       password: body.password,
     });
-    console.log(user);
+
     const payload = {
       userId: user.id,
       role: isRole(body.role),
     };
-    console.log(payload);
-    const [access, refresh] = await Promise.all([
-      this.tokenService.signAccessToken({ ...payload, type: TokenType.ACCESS }),
-      this.tokenService.signRefreshToken({
-        ...payload,
-        type: TokenType.REFRESH,
-      }),
-    ]);
 
-    return LoginMapper.toDomain(user, body.role, { access, refresh });
+    const tokens = await this.authService.startSession(payload, {
+      timeZone: body.timeZone,
+      deviceToken: body.deviceToken,
+    });
+
+    return LoginMapper.toDomain(user, body.role, tokens);
   }
 
+  @Public()
   @Post('email/signup')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
@@ -86,6 +97,7 @@ export class AuthController {
     return SignupMapper.toDomain(user, body.role);
   }
 
+  @Public()
   @Get('email/verify')
   @Redirect()
   async verifyEmail(@Query() query: EmailVerifyQueryDto) {
@@ -102,16 +114,19 @@ export class AuthController {
     }
   }
 
+  @Public()
   @Get('email/verify/success')
   verifyEmailSuccess() {
     return { message: 'Email Verified' };
   }
 
+  @Public()
   @Get('email/verify/error')
   verifyEmailError() {
     return { message: 'Email Verification failed!' };
   }
 
+  @Public()
   @Get('email/resend')
   async resendEmail(@Query() query: EmailResendQueryDto) {
     const payload = await this.authService.resendEmail(query.email);
@@ -164,5 +179,43 @@ export class AuthController {
       successMessage.AUTH.RESET_PASSWORD,
       HttpStatus.OK,
     );
+  }
+
+  @Get('/me')
+  @HttpCode(HttpStatus.OK)
+  getMe(@CurrentUser() user: UserDto) {
+    return new GetMeResponseDto(
+      user,
+      successMessage.AUTH.GET_ME,
+      HttpStatus.OK,
+    );
+  }
+
+  @Public()
+  @UseGuards(RefreshGuard)
+  @Post('/refresh')
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(
+    @Body() body: RefreshTokenBody,
+    @CurrentUser() user: UserDto,
+    @CurrentSession() session: SessionDto,
+    @CurrentToken() refreshToken: TokenDto,
+  ) {
+    const tokens = await this.authService.refreshSession(
+      { userId: user.id, role: user.role },
+      session,
+      body,
+    );
+
+    await this.tokenService.revokeToken(refreshToken);
+
+    return RefreshTokenMapper.toDomain(tokens);
+  }
+
+  @Get('/logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(@CurrentSession() session: SessionDto) {
+    await this.authService.logout(session);
+    return new LogoutResponseDto({}, successMessage.AUTH.LOGOUT, HttpStatus.OK);
   }
 }
