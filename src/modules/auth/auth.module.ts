@@ -28,6 +28,9 @@ import { ProfileSettingEntity } from '../users/infrastructure/persistence/entiti
 import { SessionEntity } from './infrastructure/persistence/entities/session.entity';
 import { UserSubscriber } from './infrastructure/persistence/subscribers/user.subscriber';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.startegy';
+import { AuthAuditLogModule } from '../auth-audit-logs/auth-audit-log.module';
+import { AuthAuditLogService } from '../auth-audit-logs/auth-audit-log.service';
+import { AuthAuditLogEntity } from '../auth-audit-logs/infrastructure/entities/auth-audit-log.entity';
 
 @Module({
   imports: [
@@ -39,11 +42,13 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.startegy';
       UserRoleEntity,
       ProfileSettingEntity,
       SessionEntity,
+      AuthAuditLogEntity,
     ]),
     forwardRef(() => UserModule),
     forwardRef(() => RoleModule),
     forwardRef(() => TokenModule),
     forwardRef(() => CompanyModule),
+    forwardRef(() => AuthAuditLogModule),
     SharedModule,
     MailModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -68,6 +73,7 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.startegy';
     JwtAccessStrategy,
     JwtRefreshStrategy,
     UserService,
+    AuthAuditLogService,
     RoleService,
     HashingService,
     TokenService,

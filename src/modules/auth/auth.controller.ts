@@ -42,6 +42,8 @@ import { RefreshTokenMapper } from './infrastructure/persistence/mapper/refresh.
 import { CurrentToken } from '@/decorators/current-token.decorator';
 import { TokenDto } from '../token/dtos/token.dto';
 import { LogoutResponseDto } from './dtos/response/logout.dto';
+import { UseAuthAuditInterceptor } from '@/interceptors/auth-audit.interceptor';
+import { AuthAuditLogEvent } from '@/constants/auth-audit-log-event';
 
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
@@ -53,6 +55,10 @@ export class AuthController {
   ) {}
 
   @Public()
+  @UseAuthAuditInterceptor({
+    success: AuthAuditLogEvent.LOGIN_SUCCESS,
+    error: AuthAuditLogEvent.LOGIN_FAILURE,
+  })
   @Post('email/login')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
@@ -80,6 +86,10 @@ export class AuthController {
 
   @Public()
   @Post('email/signup')
+  @UseAuthAuditInterceptor({
+    success: AuthAuditLogEvent.SIGNUP_SUCCESS,
+    error: AuthAuditLogEvent.SIGNUP_FAILURE,
+  })
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     type: EmailLoginResponseDto,
@@ -128,6 +138,10 @@ export class AuthController {
 
   @Public()
   @Get('email/resend')
+  @UseAuthAuditInterceptor({
+    success: AuthAuditLogEvent.EMAIL_RESEND_SUCCESS,
+    error: AuthAuditLogEvent.EMAIL_RESEND_ERROR,
+  })
   async resendEmail(@Query() query: EmailResendQueryDto) {
     const payload = await this.authService.resendEmail(query.email);
 
@@ -146,6 +160,10 @@ export class AuthController {
   }
 
   @Post('/password/forgot')
+  @UseAuthAuditInterceptor({
+    success: AuthAuditLogEvent.FORGOT_PASSWORD_SUCCESS,
+    error: AuthAuditLogEvent.FORGOT_PASSWORD_FAILURE,
+  })
   async forgotPassword(@Body() body: ForgotPasswordBodyDto) {
     const payload = await this.authService.forgotPassword(body.email);
 
@@ -164,6 +182,10 @@ export class AuthController {
   }
 
   @Post('/password/reset')
+  @UseAuthAuditInterceptor({
+    success: AuthAuditLogEvent.RESET_PASSWORD_SUCCESS,
+    error: AuthAuditLogEvent.RESET_PASSWORD_FAILURE,
+  })
   async resetPassword(
     @Query() query: ResetPasswordQueryDto,
     @Body() body: ResetPasswordBodyDto,
@@ -182,6 +204,10 @@ export class AuthController {
   }
 
   @Get('/me')
+  @UseAuthAuditInterceptor({
+    success: AuthAuditLogEvent.ME_SUCCESS,
+    error: AuthAuditLogEvent.ME_FAILURE,
+  })
   @HttpCode(HttpStatus.OK)
   getMe(@CurrentUser() user: UserDto) {
     return new GetMeResponseDto(
@@ -194,6 +220,10 @@ export class AuthController {
   @Public()
   @UseGuards(RefreshGuard)
   @Post('/refresh')
+  @UseAuthAuditInterceptor({
+    success: AuthAuditLogEvent.REFRESH_SUCCESS,
+    error: AuthAuditLogEvent.REFRESH_FAILURE,
+  })
   @HttpCode(HttpStatus.OK)
   async refreshToken(
     @Body() body: RefreshTokenBody,
@@ -213,6 +243,10 @@ export class AuthController {
   }
 
   @Get('/logout')
+  @UseAuthAuditInterceptor({
+    success: AuthAuditLogEvent.LOGOUT_SUCCESS,
+    error: AuthAuditLogEvent.LOGOUT_FAILURE,
+  })
   @HttpCode(HttpStatus.OK)
   async logout(@CurrentSession() session: SessionDto) {
     await this.authService.logout(session);

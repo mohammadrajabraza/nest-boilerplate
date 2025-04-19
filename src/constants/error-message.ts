@@ -38,6 +38,9 @@ const ErrorMessage = {
     UPDATE_FAILED: 'Session update failed',
     ALREAD_LOGOUT: 'Session already logout',
   },
+  AUTH_AUDIT_LOG: {
+    CREATION_FAILED: 'failed to create auth audit log',
+  },
 };
 
 export default Object.freeze(ErrorMessage);

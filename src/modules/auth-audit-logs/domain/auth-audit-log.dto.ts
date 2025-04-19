@@ -4,8 +4,8 @@ import {
   EnumFieldOptional,
   StringFieldOptional,
 } from '@/decorators/field.decorator';
-import { AuthAuditLogEntity } from '../infrastructure/persistence/entities/auth-audit-log.entity';
-import { AuthAuditLogEvent } from '@/config/auth-auth-log-event';
+import { AuthAuditLogEvent } from '@/constants/auth-audit-log-event';
+import { AuthAuditLogEntity } from '../infrastructure/entities/auth-audit-log.entity';
 
 export class AuthAuditLogDto extends AbstractDto {
   @EnumFieldOptional(() => AuthAuditLogEvent, { nullable: false })
@@ -17,8 +17,14 @@ export class AuthAuditLogDto extends AbstractDto {
   @StringFieldOptional({ nullable: true })
   ipAddress: string | null;
 
-  @StringFieldOptional({ nullable: false })
-  userId: string;
+  @StringFieldOptional({ nullable: true })
+  userId?: string;
+
+  @StringFieldOptional({ nullable: true })
+  body?: string;
+
+  @StringFieldOptional({ nullable: true })
+  response?: string;
 
   @DateField({ swagger: true })
   eventTimestamp: Date;

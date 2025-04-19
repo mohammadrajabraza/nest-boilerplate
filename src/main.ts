@@ -19,6 +19,7 @@ import { SharedModule } from './shared/shared.module';
 import compression from 'compression';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import * as requestIp from 'request-ip';
 import { BadRequestFilter } from './filters/bad-request.filter';
 import { QueryFailedFilter } from './filters/query-failed.filter';
 
@@ -33,6 +34,8 @@ async function bootstrap() {
   app.enableVersioning();
 
   app.use(helmet());
+  app.use(requestIp.mw());
+
   // app.setGlobalPrefix('/api'); use api as global prefix if you don't have subdomain
   app.use(compression());
   app.use(morgan('combined'));

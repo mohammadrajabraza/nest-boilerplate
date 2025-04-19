@@ -15,7 +15,7 @@ import { CompanyEntity } from '@/modules/companies/infrastructure/persistence/en
 import { UserRoleEntity } from '@/modules/roles/infrastructure/persistence/entities/user-role.entity';
 import { ProfileSettingEntity } from './profile-setting.entity';
 import { SessionEntity } from '@/modules/auth/infrastructure/persistence/entities/session.entity';
-import { AuthAuditLogEntity } from '@/modules/auth/infrastructure/persistence/entities/auth-audit-log.entity';
+import { AuthAuditLogEntity } from '@/modules/auth-audit-logs/infrastructure/entities/auth-audit-log.entity';
 
 @Entity({ name: 'users' })
 @UseDto(UserDto)
