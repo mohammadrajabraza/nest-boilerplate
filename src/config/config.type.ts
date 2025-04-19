@@ -75,9 +75,17 @@ export type MailConfig = {
   };
 };
 
+export type GoogleConfig = {
+  clientSecret: string;
+  clientId: string;
+  callbackUrl: string;
+  scopes: string;
+};
+
 export type AllConfigType = {
   app: AppConfig;
   database: DatabaseConfig;
   auth: AuthConfig;
   mail: MailConfig;
+  google: GoogleConfig;
 };

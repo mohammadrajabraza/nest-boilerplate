@@ -34,8 +34,20 @@ export type CustomRequest = Request & {
   user: AccessPayload;
 };
 
+export type SocialRequest<TProvider extends 'google'> = Request & {
+  user: SocialUser<TProvider>;
+};
+
 export type RefreshPayload = {
   user: UserDto;
   session: SessionDto;
   token: TokenDto;
+};
+
+export type SocialUser<Provider extends 'google'> = {
+  provider: Provider;
+  providerId: number;
+  email: string;
+  name: string;
+  picture: string;
 };

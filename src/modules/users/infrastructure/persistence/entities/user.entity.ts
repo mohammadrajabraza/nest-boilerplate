@@ -33,7 +33,21 @@ export class UserEntity extends AbstractEntity<UserDto, UserDtoOptions> {
   password: string;
 
   @Column({ nullable: true, type: 'varchar' })
-  phone!: string | null;
+  phone?: string | null;
+
+  @Column({
+    type: 'text',
+    array: true,
+    nullable: true,
+    default: () => "'{email}'",
+  })
+  authProviders: string[];
+
+  @Column({ type: 'text', nullable: true })
+  googleId: string;
+
+  @Column({ type: 'text', nullable: true })
+  profilePicture: string;
 
   @VirtualColumn({
     query: (alias) =>

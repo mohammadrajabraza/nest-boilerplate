@@ -8,6 +8,7 @@ import {
   Post,
   Query,
   Redirect,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -44,6 +45,8 @@ import { TokenDto } from '../token/dtos/token.dto';
 import { LogoutResponseDto } from './dtos/response/logout.dto';
 import { UseAuthAuditInterceptor } from '@/interceptors/auth-audit.interceptor';
 import { AuthAuditLogEvent } from '@/constants/auth-audit-log-event';
+import { GoogleOAuthGuard } from '@/guards/google-oauth.guard';
+import { SocialRequest } from '@/types/jwt';
 
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
@@ -251,5 +254,43 @@ export class AuthController {
   async logout(@CurrentSession() session: SessionDto) {
     await this.authService.logout(session);
     return new LogoutResponseDto({}, successMessage.AUTH.LOGOUT, HttpStatus.OK);
+  }
+
+  @Get('/google')
+  @Public()
+  @UseAuthAuditInterceptor({
+    success: AuthAuditLogEvent.LOGOUT_SUCCESS,
+    error: AuthAuditLogEvent.LOGOUT_FAILURE,
+  })
+  @UseGuards(GoogleOAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  googleAuth() {
+    console.log('Google auth route hit');
+  }
+
+  @Get('/google/callback')
+  @Public()
+  @UseAuthAuditInterceptor({
+    success: AuthAuditLogEvent.LOGOUT_SUCCESS,
+    error: AuthAuditLogEvent.LOGOUT_FAILURE,
+  })
+  @UseGuards(GoogleOAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Redirect()
+  async googleAuthCallback(@Req() req: SocialRequest<'google'>) {
+    const user = await this.authService.googleAuth(req.user);
+    const tokens = await this.authService.startSession(
+      {
+        userId: user.id,
+        role: isRole(user.userRoles[0].role.name),
+      },
+      { deviceToken: null, timeZone: null },
+    );
+
+    return {
+      url: `${this.apiConfigService.frontendDomain}/google/success?access=${encodeURIComponent(tokens.access.token)}&refresh=${encodeURIComponent(
+        tokens.refresh.token,
+      )}`,
+    };
   }
 }

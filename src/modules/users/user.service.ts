@@ -18,6 +18,9 @@ import toSafeAsync from '@/utils/to-safe-async';
 import { plainToInstance } from 'class-transformer';
 import { ProfileSettingEntity } from './infrastructure/persistence/entities/profile-setting.entity';
 
+type CreateUserData = EmailSignupBodyDto &
+  ({ provider?: 'google'; googleId: string | number } | { provider?: 'email' });
+
 @Injectable()
 export class UserService {
   constructor(
@@ -69,7 +72,7 @@ export class UserService {
     }
   }
 
-  async create(data: EmailSignupBodyDto) {
+  async create(data: CreateUserData) {
     const role = await this.roleService.getRoleByName(data.role);
 
     try {
@@ -79,7 +82,9 @@ export class UserService {
       userEntity.email = data.email;
       userEntity.phone = data.phone;
       userEntity.password = data.password;
-      userEntity.companyId = data.companyId;
+      if (data.companyId) {
+        userEntity.companyId = data.companyId;
+      }
       const user = await this.userRepository.save(userEntity);
       const userRoleEntity = new UserRoleEntity();
       userRoleEntity.userId = user.id;
@@ -142,9 +147,17 @@ export class UserService {
     }
   }
 
-  async updateUser(userId: Uuid, { password }: { password: string }) {
+  async updateUser(
+    userId: Uuid,
+    data: {
+      password?: string;
+      authProviders?: string[];
+      googleId?: string;
+      profilePicture?: string;
+    },
+  ) {
     try {
-      await this.userRepository.update(userId, { password });
+      return await this.userRepository.update(userId, data);
     } catch (error) {
       Logger.error(error);
       throw new InternalServerErrorException(errorMessage.USER.UPDATION_FAILED);

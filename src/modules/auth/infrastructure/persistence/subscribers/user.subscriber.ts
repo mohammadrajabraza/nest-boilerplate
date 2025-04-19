@@ -25,14 +25,18 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
 
   async beforeInsert(event: InsertEvent<UserEntity>): Promise<void> {
     const user = event.entity;
-    if (user.password) {
+    if (user.password && user.password !== 'invalid') {
       user.password = await this.hashingService.hash(user.password);
     }
   }
 
   async beforeUpdate(event: UpdateEvent<UserEntity>): Promise<void> {
     const userEntity = event.entity;
-    if (userEntity && userEntity.password) {
+    if (
+      userEntity &&
+      userEntity.password &&
+      userEntity.password !== 'invalid'
+    ) {
       userEntity.password = await this.hashingService.hash(userEntity.password);
     }
   }

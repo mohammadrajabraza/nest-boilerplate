@@ -153,7 +153,9 @@ export function ToUpperCase(): PropertyDecorator {
 // }
 
 export function PhoneNumberSerializer(): PropertyDecorator {
-  return Transform(
-    (params) => parsePhoneNumberWithError(params.value as string).number,
+  return Transform((params) =>
+    params.value
+      ? parsePhoneNumberWithError(params.value as string).number
+      : '',
   );
 }

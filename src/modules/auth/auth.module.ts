@@ -31,6 +31,7 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.startegy';
 import { AuthAuditLogModule } from '../auth-audit-logs/auth-audit-log.module';
 import { AuthAuditLogService } from '../auth-audit-logs/auth-audit-log.service';
 import { AuthAuditLogEntity } from '../auth-audit-logs/infrastructure/entities/auth-audit-log.entity';
+import { GoogleOauthStrategy } from './strategies/google-oauth.strategy';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { AuthAuditLogEntity } from '../auth-audit-logs/infrastructure/entities/a
     ApiConfigService,
     JwtAccessStrategy,
     JwtRefreshStrategy,
+    GoogleOauthStrategy,
     UserService,
     AuthAuditLogService,
     RoleService,

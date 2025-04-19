@@ -60,6 +60,15 @@ export class ApiConfigService {
     };
   }
 
+  get googleConfig() {
+    return {
+      clientSecret: this.get('google.clientSecret'),
+      clientID: this.get('google.clientId'),
+      callbackURL: this.get('google.callbackUrl'),
+      scope: this.get('google.scopes').split(','),
+    };
+  }
+
   get mailConfig(): SMTPTransport.Options {
     return {
       host: this.get('mail.host'),

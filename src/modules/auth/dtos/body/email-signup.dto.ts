@@ -21,11 +21,11 @@ export class EmailSignupBodyDto {
   password: string;
 
   @StringFieldOptional({ swagger: true })
-  phone: string | null;
+  phone?: string | null;
 
   @EnumField(() => RoleType)
   role: RoleType;
 
   @StringFieldOptional({ swagger: true })
-  companyId: string;
+  companyId?: string | null;
 }

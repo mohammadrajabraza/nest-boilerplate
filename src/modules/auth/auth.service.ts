@@ -15,7 +15,7 @@ import { EmailSignupBodyDto } from './dtos/body/email-signup.dto';
 import { CompanyService } from '../companies/company.service';
 import { isRole } from '@/utils/is-role';
 import { TokenType } from '@/constants/token-type';
-import { JwtPayload, PassowrdResetPayload } from '@/types/jwt';
+import { JwtPayload, PassowrdResetPayload, SocialRequest } from '@/types/jwt';
 import { TokenService } from '../token/token.service';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { SessionEntity } from './infrastructure/persistence/entities/session.entity';
@@ -23,6 +23,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { SessionDto } from './domain/session.dto';
 import { RefreshTokenBody } from './dtos/body/refresh-token.dto';
+import { RoleType } from '@/constants/role-type';
 
 @Injectable()
 export class AuthService {
@@ -155,7 +156,10 @@ export class AuthService {
       data.companyId = company.id;
     }
 
-    const createdUser = await this.userService.create(data);
+    const createdUser = await this.userService.create({
+      ...data,
+      provider: 'email',
+    });
 
     const user = await this.userService.findOne({ id: createdUser.id });
 
@@ -236,5 +240,42 @@ export class AuthService {
       Logger.error(error);
       throw new InternalServerErrorException(errorMessage.AUTH.LOGOUT_FAILED);
     }
+  }
+
+  async googleAuth(data: SocialRequest<'google'>['user']) {
+    const result = await toSafeAsync(
+      this.userService.findOne({ email: data.email }),
+    );
+
+    if (!result.success) {
+      console.log('Create user');
+      const user = await this.userService.create({
+        firstName: data.name,
+        lastName: '',
+        email: data.email,
+        provider: 'google',
+        googleId: data.providerId,
+        role: RoleType.USER,
+        password: 'invalid',
+      });
+
+      return user;
+    }
+
+    if (result.data.authProviders.includes('google')) {
+      if (result.data.googleId !== data.providerId.toString()) {
+        throw new UnauthorizedException('Google account mismatch');
+      }
+
+      return result.data;
+    }
+
+    await this.userService.updateUser(result.data.id, {
+      authProviders: [...(result.data.authProviders || []), 'google'],
+      googleId: data.providerId.toString(),
+      profilePicture: data.picture,
+    });
+
+    return await this.userService.findOne({ id: result.data.id });
   }
 }
