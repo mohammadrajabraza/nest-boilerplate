@@ -3,6 +3,7 @@ import databaseConfig from './database.config';
 import authConfig from './auth.config';
 import mailConfig from './mail.config';
 import googleConfig from './google.config';
+import awsConfig from './aws.config';
 
 export default [
   appConfig,
@@ -10,4 +11,5 @@ export default [
   authConfig,
   mailConfig,
   googleConfig,
+  awsConfig,
 ];

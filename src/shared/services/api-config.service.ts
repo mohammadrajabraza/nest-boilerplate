@@ -186,8 +186,31 @@ export class ApiConfigService {
     return this.get('app.frontendDomain');
   }
 
+  get backendDomain() {
+    return this.get('app.backendDomain');
+  }
+
   get workingDirectory() {
     return this.get('app.workingDirectory');
+  }
+
+  get s3BucketName() {
+    return this.get('aws.s3.bucketName');
+  }
+
+  get imageUploadConfig() {
+    return {
+      maxFileSize: 5 * 1024 * 1024,
+      allowedMimeTypes: ['image/png', 'image/jpg', 'image/jpeg'],
+    };
+  }
+
+  get awsConfig() {
+    return {
+      region: this.get('aws.region'),
+      accessKeyId: this.get('aws.accessKey'),
+      secretAccessKey: this.get('aws.secretAccess'),
+    };
   }
 
   private get<TKey extends NestedKeyOf<AllConfigType>>(key: TKey) {

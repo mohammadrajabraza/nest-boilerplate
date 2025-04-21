@@ -82,10 +82,20 @@ export type GoogleConfig = {
   scopes: string;
 };
 
+export type AWSConfig = {
+  region: string;
+  accessKey: string;
+  secretAccess: string;
+  s3: {
+    bucketName: string;
+  };
+};
+
 export type AllConfigType = {
   app: AppConfig;
   database: DatabaseConfig;
   auth: AuthConfig;
   mail: MailConfig;
   google: GoogleConfig;
+  aws: AWSConfig;
 };
