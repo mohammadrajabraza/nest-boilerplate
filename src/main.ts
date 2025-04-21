@@ -22,6 +22,8 @@ import morgan from 'morgan';
 import * as requestIp from 'request-ip';
 import { BadRequestFilter } from './filters/bad-request.filter';
 import { QueryFailedFilter } from './filters/query-failed.filter';
+import { RolesGuard } from './guards/role.guard';
+import { AuthGuard } from './guards/auth.guard';
 
 async function bootstrap() {
   initializeTransactionalContext();
@@ -41,6 +43,11 @@ async function bootstrap() {
   app.use(morgan('combined'));
 
   const reflector = app.get(Reflector);
+
+  app.useGlobalGuards(
+    new AuthGuard(reflector), // Runs first
+    new RolesGuard(reflector), // Runs second
+  );
 
   app.useGlobalFilters(
     new BadRequestFilter(reflector),

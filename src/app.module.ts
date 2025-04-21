@@ -22,8 +22,6 @@ import { UserModule } from './modules/users/user.module';
 import { RoleModule } from './modules/roles/role.module';
 import { TokenModule } from './modules/token/token.module';
 import { MailModule } from './mail/mail.module';
-import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from './guards/auth.guard';
 import { ImageModule } from './modules/images/image.module';
 
 @Module({
@@ -86,7 +84,7 @@ import { ImageModule } from './modules/images/image.module';
     ImageModule,
   ],
   controllers: [AppController, TestController],
-  providers: [AppService, { provide: APP_GUARD, useClass: AuthGuard }],
+  providers: [AppService],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

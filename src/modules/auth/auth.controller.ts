@@ -49,6 +49,7 @@ import { GoogleOAuthGuard } from '@/guards/google-oauth.guard';
 import { SocialRequest } from '@/types/jwt';
 import { UserService } from '../users/user.service';
 import { RoleType } from '@/constants/role-type';
+import { Roles } from '@/decorators/role.decorator';
 
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
@@ -166,6 +167,8 @@ export class AuthController {
   }
 
   @Post('/password/forgot')
+  @Public()
+  @HttpCode(HttpStatus.OK)
   @UseAuthAuditInterceptor({
     success: AuthAuditLogEvent.FORGOT_PASSWORD_SUCCESS,
     error: AuthAuditLogEvent.FORGOT_PASSWORD_FAILURE,
@@ -188,6 +191,8 @@ export class AuthController {
   }
 
   @Post('/password/reset')
+  @Public()
+  @HttpCode(HttpStatus.OK)
   @UseAuthAuditInterceptor({
     success: AuthAuditLogEvent.RESET_PASSWORD_SUCCESS,
     error: AuthAuditLogEvent.RESET_PASSWORD_FAILURE,
@@ -210,6 +215,7 @@ export class AuthController {
   }
 
   @Get('/me')
+  @Roles(RoleType.USER, RoleType.ADMIN)
   @UseAuthAuditInterceptor({
     success: AuthAuditLogEvent.ME_SUCCESS,
     error: AuthAuditLogEvent.ME_FAILURE,
@@ -253,6 +259,7 @@ export class AuthController {
     success: AuthAuditLogEvent.LOGOUT_SUCCESS,
     error: AuthAuditLogEvent.LOGOUT_FAILURE,
   })
+  @Roles(RoleType.USER, RoleType.ADMIN)
   @HttpCode(HttpStatus.OK)
   async logout(@CurrentSession() session: SessionDto) {
     await this.authService.logout(session);

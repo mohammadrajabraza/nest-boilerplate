@@ -144,6 +144,17 @@ export class UserService {
         where: { userId: userId },
       });
 
+      // if (!profileSetting) {
+      //   const setting = await this.profileSettingRepository.save(
+      //     plainToInstance(ProfileSettingEntity, {
+      //       userId,
+      //       isEmailVerified: true,
+      //       isPhoneVerified: false,
+      //     }),
+      //   );
+      //   return setting.isEmailVerified;
+      // }
+
       return profileSetting.isEmailVerified;
     } catch (error) {
       Logger.error(error);
