@@ -1,7 +1,7 @@
 import { Column, Entity } from 'typeorm';
 import { AbstractEntity } from '@/common/abstract.entity';
 import { UseDto } from '@/decorators/use-dto.decorator';
-import { TokenDto } from '@/modules/token/dtos/token.dto';
+import { TokenDto } from '@/modules/token/domain/token.dto';
 import { TokenType } from '@/constants/token-type';
 
 @Entity({ name: 'tokens' })

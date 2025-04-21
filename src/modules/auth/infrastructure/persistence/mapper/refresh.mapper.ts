@@ -6,7 +6,7 @@ import {
 import {
   AuthTokenResponseDto,
   TokenPayload,
-} from '@/modules/roles/dtos/response/auth-token.dto';
+} from '@/modules/token/dtos/auth-token.dto';
 import { HttpStatus } from '@nestjs/common';
 
 export class RefreshTokenMapper {

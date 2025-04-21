@@ -24,7 +24,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TokenEntity } from './infrastructure/persistence/entities/token.entity';
 import { Repository } from 'typeorm';
 import { plainToInstance } from 'class-transformer';
-import { TokenDto } from './dtos/token.dto';
+import { TokenDto } from './domain/token.dto';
 
 @Injectable()
 export class TokenService {

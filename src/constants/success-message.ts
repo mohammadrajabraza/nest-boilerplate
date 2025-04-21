@@ -9,6 +9,20 @@ const SuccessMessage = {
     GET_ME: 'Get user info',
     LOGOUT: 'logout successful',
   },
+  ROLE: {
+    CREATE: 'Role created successfully',
+    LIST: 'Role listed successfully',
+    UPDATE: 'Role updated sccessfully',
+    DELETE: 'Role deleted succesfully',
+    GET: 'Role get successfully',
+  },
+  COMPANY: {
+    CREATE: 'Company created successfully',
+    LIST: 'Company listed successfully',
+    UPDATE: 'Company updated sccessfully',
+    DELETE: 'Company deleted succesfully',
+    GET: 'Company get successfully',
+  },
 };
 
 export default Object.freeze(SuccessMessage);

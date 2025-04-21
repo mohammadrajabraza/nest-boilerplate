@@ -23,6 +23,7 @@ import { RoleModule } from './modules/roles/role.module';
 import { TokenModule } from './modules/token/token.module';
 import { MailModule } from './mail/mail.module';
 import { ImageModule } from './modules/images/image.module';
+import { CompanyModule } from './modules/companies/company.module';
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ import { ImageModule } from './modules/images/image.module';
       inject: [ApiConfigService],
     }),
     AuthModule,
+    CompanyModule,
     UserModule,
     RoleModule,
     TokenModule,

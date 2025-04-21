@@ -7,7 +7,7 @@ import {
 import {
   AuthTokenResponseDto,
   TokenPayload,
-} from '@/modules/roles/dtos/response/auth-token.dto';
+} from '@/modules/token/dtos/auth-token.dto';
 import { UserEntity } from '@/modules/users/infrastructure/persistence/entities/user.entity';
 import { HttpStatus } from '@nestjs/common';
 

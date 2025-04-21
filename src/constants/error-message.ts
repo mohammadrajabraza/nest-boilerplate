@@ -9,10 +9,22 @@ const ErrorMessage = {
   ROLE: {
     NOT_FOUND: 'Role not found!',
     GET_BY_ID_FAILED: 'Failed to get role by id',
+    ALREADY_EXISTS: 'Role with this name already exists',
+    CREATION_FAILED: 'Failed to create role',
+    LIST_FAILED: 'failed to fetch roles',
+    FIND_ONE_FAILED: 'Role found failed!',
+    DELETION_FAILED: 'Failed to delete role',
+    UPDATION_FAILED: 'Faileed to update role',
   },
   COMPANY: {
     NOT_FOUND: 'Company not found!',
     GET_BY_ID_FAILED: 'Failed to get company by id',
+    CREATION_FAILED: 'Failed to create company',
+    LIST_FAILED: 'Failed to fetch companies',
+    FIND_ONE_FAILED: 'Company found failed!',
+    DELETION_FAILED: 'Failed to delete company',
+    UPDATION_FAILED: 'Faileed to update company',
+    ALREADY_EXISTS: 'Company with this name already exists',
   },
   TOKEN: {
     INVALID_TYPE: 'Invalid token type',

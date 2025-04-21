@@ -56,7 +56,7 @@ export class UserEntity extends AbstractEntity<UserDto, UserDtoOptions> {
   fullName!: string;
 
   @Column({ nullable: true, type: 'uuid' })
-  companyId: string;
+  companyId: string | null;
 
   @JoinColumn({
     name: 'company_id',

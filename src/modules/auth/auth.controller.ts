@@ -13,7 +13,14 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { EmailLoginBodyDto } from './dtos/body/email-login.dto';
-import { ApiOkResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiHeaders,
+  ApiOkResponse,
+  ApiQuery,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { EmailLoginResponseDto } from './dtos/response/email-login.dto';
 import { TokenService } from '../token/token.service';
 import { EmailSignupBodyDto } from './dtos/body/email-signup.dto';
@@ -41,7 +48,7 @@ import { SessionDto } from './domain/session.dto';
 import { RefreshTokenBody } from './dtos/body/refresh-token.dto';
 import { RefreshTokenMapper } from './infrastructure/persistence/mapper/refresh.mapper';
 import { CurrentToken } from '@/decorators/current-token.decorator';
-import { TokenDto } from '../token/dtos/token.dto';
+import { TokenDto } from '../token/domain/token.dto';
 import { LogoutResponseDto } from './dtos/response/logout.dto';
 import { UseAuthAuditInterceptor } from '@/interceptors/auth-audit.interceptor';
 import { AuthAuditLogEvent } from '@/constants/auth-audit-log-event';
@@ -50,6 +57,9 @@ import { SocialRequest } from '@/types/jwt';
 import { UserService } from '../users/user.service';
 import { RoleType } from '@/constants/role-type';
 import { Roles } from '@/decorators/role.decorator';
+import { EmailSignupResponseDto } from './dtos/response/email-signup.dto';
+import { BaseResponseMixin } from '@/common/dto/base-response.dto';
+import { RefreshTokenResponseDto } from './dtos/response/refresh-token.dto';
 
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
@@ -72,6 +82,7 @@ export class AuthController {
     type: EmailLoginResponseDto,
     description: 'User info with access token',
   })
+  @ApiBody({ type: EmailLoginBodyDto })
   async login(@Body() body: EmailLoginBodyDto) {
     const user = await this.authService.login({
       email: body.email,
@@ -99,9 +110,10 @@ export class AuthController {
   })
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
-    type: EmailLoginResponseDto,
+    type: EmailSignupResponseDto,
     description: 'User info',
   })
+  @ApiBody({ type: EmailSignupBodyDto })
   async signup(@Body() body: EmailSignupBodyDto) {
     const { payload, user } = await this.authService.signup(body);
     const token = await this.tokenService.signConfirmEmailToken(payload);
@@ -117,6 +129,10 @@ export class AuthController {
   @Public()
   @Get('email/verify')
   @Redirect()
+  @ApiResponse({
+    status: HttpStatus.PERMANENT_REDIRECT,
+  })
+  @ApiQuery({ name: 'token', type: String })
   async verifyEmail(@Query() query: EmailVerifyQueryDto) {
     const { redirect } = this.apiConfigService.authConfig['confirm-email'];
     try {
@@ -132,23 +148,44 @@ export class AuthController {
   }
 
   @Public()
+  @HttpCode(HttpStatus.OK)
   @Get('email/verify/success')
+  @ApiOkResponse({
+    type: BaseResponseMixin(class {}),
+  })
   verifyEmailSuccess() {
-    return { message: 'Email Verified' };
+    return new (BaseResponseMixin(class {}))(
+      {},
+      'Email verified',
+      HttpStatus.OK,
+    );
   }
 
   @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({
+    type: BaseResponseMixin(class {}),
+  })
   @Get('email/verify/error')
   verifyEmailError() {
-    return { message: 'Email Verification failed!' };
+    return new (BaseResponseMixin(class {}))(
+      {},
+      'Email Verification failed!',
+      HttpStatus.OK,
+    );
   }
 
   @Public()
   @Get('email/resend')
+  @HttpCode(HttpStatus.OK)
   @UseAuthAuditInterceptor({
     success: AuthAuditLogEvent.EMAIL_RESEND_SUCCESS,
     error: AuthAuditLogEvent.EMAIL_RESEND_ERROR,
   })
+  @ApiOkResponse({
+    type: EmailResendResponseDto,
+  })
+  @ApiQuery({ name: 'email', type: String })
   async resendEmail(@Query() query: EmailResendQueryDto) {
     const payload = await this.authService.resendEmail(query.email);
 
@@ -173,6 +210,10 @@ export class AuthController {
     success: AuthAuditLogEvent.FORGOT_PASSWORD_SUCCESS,
     error: AuthAuditLogEvent.FORGOT_PASSWORD_FAILURE,
   })
+  @ApiOkResponse({
+    type: ForgotPasswordResponseDto,
+  })
+  @ApiBody({ type: ForgotPasswordBodyDto })
   async forgotPassword(@Body() body: ForgotPasswordBodyDto) {
     const payload = await this.authService.forgotPassword(body.email);
 
@@ -197,6 +238,11 @@ export class AuthController {
     success: AuthAuditLogEvent.RESET_PASSWORD_SUCCESS,
     error: AuthAuditLogEvent.RESET_PASSWORD_FAILURE,
   })
+  @ApiOkResponse({
+    type: ResetPasswordResponseDto,
+  })
+  @ApiQuery({ name: 'token', type: String })
+  @ApiBody({ type: ResetPasswordBodyDto })
   async resetPassword(
     @Query() query: ResetPasswordQueryDto,
     @Body() body: ResetPasswordBodyDto,
@@ -221,6 +267,10 @@ export class AuthController {
     error: AuthAuditLogEvent.ME_FAILURE,
   })
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    type: GetMeResponseDto,
+  })
   getMe(@CurrentUser() user: UserDto) {
     return new GetMeResponseDto(
       user,
@@ -237,6 +287,16 @@ export class AuthController {
     error: AuthAuditLogEvent.REFRESH_FAILURE,
   })
   @HttpCode(HttpStatus.OK)
+  @ApiBody({ type: RefreshTokenBody })
+  @ApiHeaders([
+    {
+      name: 'x-refresh-token',
+      required: true,
+      description: 'Refresh token',
+      example: 'abcd',
+    },
+  ])
+  @ApiOkResponse({ type: RefreshTokenResponseDto })
   async refreshToken(
     @Body() body: RefreshTokenBody,
     @CurrentUser() user: UserDto,
@@ -255,10 +315,12 @@ export class AuthController {
   }
 
   @Get('/logout')
+  @ApiBearerAuth()
   @UseAuthAuditInterceptor({
     success: AuthAuditLogEvent.LOGOUT_SUCCESS,
     error: AuthAuditLogEvent.LOGOUT_FAILURE,
   })
+  @ApiOkResponse({ type: LogoutResponseDto })
   @Roles(RoleType.USER, RoleType.ADMIN)
   @HttpCode(HttpStatus.OK)
   async logout(@CurrentSession() session: SessionDto) {
@@ -287,6 +349,9 @@ export class AuthController {
   @UseGuards(GoogleOAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Redirect()
+  @ApiResponse({
+    status: HttpStatus.PERMANENT_REDIRECT,
+  })
   async googleAuthCallback(@Req() req: SocialRequest<'google'>) {
     const redirectConfig = this.apiConfigService.googleRedirect;
     try {
@@ -313,6 +378,9 @@ export class AuthController {
   @Get('/google/success')
   @Public()
   @HttpCode(HttpStatus.OK)
+  @ApiQuery({ name: 'access', type: String })
+  @ApiQuery({ name: 'refresh', type: String })
+  @ApiOkResponse({})
   async googleSuccess(
     @Query('access') accessToken: string,
     @Query('refresh') refreshToken: string,
@@ -332,6 +400,7 @@ export class AuthController {
   @Get('/google/error')
   @Public()
   @HttpCode(HttpStatus.OK)
+  @ApiQuery({ name: 'error', type: String })
   googleError(@Query('error') error: string) {
     return { message: error };
   }

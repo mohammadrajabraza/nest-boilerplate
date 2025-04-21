@@ -1,7 +1,7 @@
 import { RoleType } from '@/constants/role-type';
 import { TokenType } from '@/constants/token-type';
 import { SessionDto } from '@/modules/auth/domain/session.dto';
-import { TokenDto } from '@/modules/token/dtos/token.dto';
+import { TokenDto } from '@/modules/token/domain/token.dto';
 import { UserDto } from '@/modules/users/dtos/user.dto';
 
 export type JwtPayload = {

@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 import { AbstractEntity } from '@/common/abstract.entity';
-import { CompanyDto } from '@/modules/companies/dtos/company.dto';
+import { CompanyDto } from '@/modules/companies/domain/company.dto';
 import { UseDto } from '@/decorators/use-dto.decorator';
 import { UserEntity } from '@/modules/users/infrastructure/persistence/entities/user.entity';
 
