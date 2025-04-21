@@ -80,6 +80,10 @@ export type GoogleConfig = {
   clientId: string;
   callbackUrl: string;
   scopes: string;
+  redirect: {
+    success: string;
+    error: string;
+  };
 };
 
 export type AWSConfig = {

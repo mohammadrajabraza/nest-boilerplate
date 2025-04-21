@@ -24,6 +24,7 @@ import { plainToInstance } from 'class-transformer';
 import { SessionDto } from './domain/session.dto';
 import { RefreshTokenBody } from './dtos/body/refresh-token.dto';
 import { RoleType } from '@/constants/role-type';
+import { AuthProviders } from '@/constants/auth-providers';
 
 @Injectable()
 export class AuthService {
@@ -44,6 +45,15 @@ export class AuthService {
       throw new UnauthorizedException(errorMessage.AUTH.INVALID_CREDENTIALS);
     }
     const user = result.data;
+    if (
+      !user.authProviders.includes(AuthProviders.EMAIL) ||
+      user.password === 'invalid'
+    ) {
+      throw new UnauthorizedException(
+        errorMessage.AUTH.CANNOT_LOGIN_WITH_EMAIL,
+      );
+    }
+
     const isPasswordMatch = await this.hashingService.compare(
       data.password,
       user.password,
@@ -158,7 +168,7 @@ export class AuthService {
 
     const createdUser = await this.userService.create({
       ...data,
-      provider: 'email',
+      provider: AuthProviders.EMAIL,
     });
 
     const user = await this.userService.findOne({ id: createdUser.id });
@@ -248,12 +258,11 @@ export class AuthService {
     );
 
     if (!result.success) {
-      console.log('Create user');
       const user = await this.userService.create({
         firstName: data.name,
         lastName: '',
         email: data.email,
-        provider: 'google',
+        provider: AuthProviders.GOOGLE,
         googleId: data.providerId,
         role: RoleType.USER,
         password: 'invalid',
@@ -262,16 +271,20 @@ export class AuthService {
       return user;
     }
 
-    if (result.data.authProviders.includes('google')) {
+    if (result.data.authProviders.includes(AuthProviders.GOOGLE)) {
       if (result.data.googleId !== data.providerId.toString()) {
-        throw new UnauthorizedException('Google account mismatch');
+        throw new UnauthorizedException(
+          errorMessage.AUTH.GOOGLE_ACCOUNT_MISMATCH,
+        );
       }
 
       return result.data;
     }
 
     await this.userService.updateUser(result.data.id, {
-      authProviders: [...(result.data.authProviders || []), 'google'],
+      authProviders: Array.from(
+        new Set([...(result.data.authProviders || []), AuthProviders.GOOGLE]),
+      ),
       googleId: data.providerId.toString(),
       profilePicture: data.picture,
     });

@@ -85,6 +85,12 @@ export class UserService {
       if (data.companyId) {
         userEntity.companyId = data.companyId;
       }
+      if (data.provider) {
+        userEntity.authProviders.push(data.provider);
+        if (data.provider === 'google') {
+          userEntity.googleId = data.googleId.toString();
+        }
+      }
       const user = await this.userRepository.save(userEntity);
       const userRoleEntity = new UserRoleEntity();
       userRoleEntity.userId = user.id;

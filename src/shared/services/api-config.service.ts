@@ -69,6 +69,13 @@ export class ApiConfigService {
     };
   }
 
+  get googleRedirect() {
+    return {
+      success: this.get('google.redirect.success'),
+      error: this.get('google.redirect.error'),
+    };
+  }
+
   get mailConfig(): SMTPTransport.Options {
     return {
       host: this.get('mail.host'),

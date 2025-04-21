@@ -29,6 +29,8 @@ const ErrorMessage = {
     EMAIL_NOT_VERIFIED: 'Email not verified',
     EMAIL_ALREADY_VERIFIED: 'Email already verified',
     LOGOUT_FAILED: 'Failed to logout',
+    CANNOT_LOGIN_WITH_EMAIL: 'Cannot login with email',
+    GOOGLE_ACCOUNT_MISMATCH: 'Google account mismatch',
   },
   PROFILE_SETTING: {
     NOT_FOUND: 'User profile setting not found!',

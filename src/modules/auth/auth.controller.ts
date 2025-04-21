@@ -47,12 +47,15 @@ import { UseAuthAuditInterceptor } from '@/interceptors/auth-audit.interceptor';
 import { AuthAuditLogEvent } from '@/constants/auth-audit-log-event';
 import { GoogleOAuthGuard } from '@/guards/google-oauth.guard';
 import { SocialRequest } from '@/types/jwt';
+import { UserService } from '../users/user.service';
+import { RoleType } from '@/constants/role-type';
 
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
   constructor(
     private authService: AuthService,
     private tokenService: TokenService,
+    private userService: UserService,
     private mailService: MailService,
     private apiConfigService: ApiConfigService,
   ) {}
@@ -278,19 +281,51 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Redirect()
   async googleAuthCallback(@Req() req: SocialRequest<'google'>) {
-    const user = await this.authService.googleAuth(req.user);
-    const tokens = await this.authService.startSession(
-      {
-        userId: user.id,
-        role: isRole(user.userRoles[0].role.name),
-      },
-      { deviceToken: null, timeZone: null },
-    );
+    const redirectConfig = this.apiConfigService.googleRedirect;
+    try {
+      const user = await this.authService.googleAuth(req.user);
+      const tokens = await this.authService.startSession(
+        {
+          userId: user.id,
+          role: isRole(user.userRoles[0].role.name),
+        },
+        { deviceToken: null, timeZone: null },
+      );
+      const url = new URL(redirectConfig.success);
+      url.searchParams.set('access', encodeURIComponent(tokens.access.token));
+      url.searchParams.set('refresh', encodeURIComponent(tokens.refresh.token));
+      return { url: url.toString() };
+    } catch (error) {
+      Logger.error(error);
+      const url = new URL(redirectConfig.error);
+      url.searchParams.set('error', error.message);
+      return { url: url.toString() };
+    }
+  }
+
+  @Get('/google/success')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  async googleSuccess(
+    @Query('access') accessToken: string,
+    @Query('refresh') refreshToken: string,
+  ) {
+    const session = await this.authService.checkSession({
+      accessToken,
+      refreshToken,
+    });
+    const user = await this.userService.findOne({ id: session.userId as Uuid });
 
     return {
-      url: `${this.apiConfigService.frontendDomain}/google/success?access=${encodeURIComponent(tokens.access.token)}&refresh=${encodeURIComponent(
-        tokens.refresh.token,
-      )}`,
+      user: user.toDto({ role: RoleType.USER }),
+      session: session.toDto(),
     };
+  }
+
+  @Get('/google/error')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  googleError(@Query('error') error: string) {
+    return { message: error };
   }
 }

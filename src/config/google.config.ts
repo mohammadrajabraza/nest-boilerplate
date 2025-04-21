@@ -15,6 +15,12 @@ class EnvironmentVariablesValidator {
 
   @IsString()
   GOOGLE_AUTH_SCOPES: string;
+
+  @IsString()
+  GOOGLE_SUCCESS_REDIRECT: string;
+
+  @IsString()
+  GOOGLE_ERROR_REDIRECT: string;
 }
 
 export default registerAs<GoogleConfig>('google', () => {
@@ -25,5 +31,9 @@ export default registerAs<GoogleConfig>('google', () => {
     clientSecret: config.GOOGLE_CLIENT_SECRET,
     callbackUrl: config.GOOGLE_CALLBACK_URL,
     scopes: config.GOOGLE_AUTH_SCOPES,
+    redirect: {
+      success: config.GOOGLE_SUCCESS_REDIRECT,
+      error: config.GOOGLE_ERROR_REDIRECT,
+    },
   } as GoogleConfig;
 });
