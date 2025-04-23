@@ -9,6 +9,13 @@ const SuccessMessage = {
     GET_ME: 'Get user info',
     LOGOUT: 'logout successful',
   },
+  USER: {
+    CREATE: 'User created successfully',
+    LIST: 'User listed successfully',
+    UPDATE: 'User updated sccessfully',
+    DELETE: 'User deleted succesfully',
+    GET: 'User get successfully',
+  },
   ROLE: {
     CREATE: 'Role created successfully',
     LIST: 'Role listed successfully',

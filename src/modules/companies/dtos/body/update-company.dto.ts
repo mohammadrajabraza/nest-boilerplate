@@ -2,23 +2,23 @@ import { StringFieldOptional } from '@/decorators/field.decorator';
 
 export class UpdateCompanyBodyDto {
   @StringFieldOptional({ swagger: true })
-  public name?: string | null;
+  public name?: string;
 
   @StringFieldOptional({ swagger: true })
-  public ntn?: string | null;
+  public ntn?: string;
 
   @StringFieldOptional({ swagger: true })
-  public email?: string | null;
+  public email?: string;
 
   @StringFieldOptional({ swagger: true })
-  public phone?: string | null;
+  public phone?: string;
 
   @StringFieldOptional({ swagger: true })
-  public address?: string | null;
+  public address?: string;
 
   @StringFieldOptional({ swagger: true })
-  public industry?: string | null;
+  public industry?: string;
 
   @StringFieldOptional({ swagger: true })
-  public status?: string | null;
+  public status?: string;
 }

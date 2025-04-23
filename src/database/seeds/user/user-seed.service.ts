@@ -9,6 +9,7 @@ import { RoleEntity } from '@/modules/roles/infrastructure/persistence/entities/
 import { plainToInstance } from 'class-transformer';
 import { CompanyEntity } from '@/modules/companies/infrastructure/persistence/entities/company.entity';
 import { UserRoleEntity } from '@/modules/roles/infrastructure/persistence/entities/user-role.entity';
+import { ProfileSettingEntity } from '@/modules/users/infrastructure/persistence/entities/profile-setting.entity';
 
 @Injectable()
 export class UserSeedService {
@@ -24,6 +25,9 @@ export class UserSeedService {
 
     @InjectRepository(UserRoleEntity)
     private userRoleRepository: Repository<UserRoleEntity>,
+
+    @InjectRepository(ProfileSettingEntity)
+    private profileSettingRepository: Repository<ProfileSettingEntity>,
   ) {}
 
   private roleMap = new Map<string, RoleEntity>();
@@ -94,13 +98,13 @@ export class UserSeedService {
       ]);
       const hashedPassword = await bcrypt.hash(data.password, 10);
 
-      const userExists = await this.userRepository.findOne({
+      let user = await this.userRepository.findOne({
         where: { email: data.email },
       });
 
-      if (userExists) {
+      if (user) {
         await this.userRepository.update(
-          { id: userExists.id },
+          { id: user.id },
           {
             firstName: data.firstName,
             lastName: data.lastName,
@@ -110,22 +114,46 @@ export class UserSeedService {
             companyId: company.id,
           },
         );
-        return;
+      } else {
+        user = await this.userRepository.save(
+          plainToInstance(UserEntity, {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            phone: data.phone,
+            password: hashedPassword,
+            companyId: company.id,
+          }),
+        );
+
+        await this.userRoleRepository.save(
+          plainToInstance(UserRoleEntity, {
+            userId: user.id,
+            roleId: role.id,
+          }),
+        );
       }
 
-      const user = await this.userRepository.save(
-        plainToInstance(UserEntity, {
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
-          phone: data.phone,
-          password: hashedPassword,
-          companyId: company.id,
-        }),
-      );
-      await this.userRoleRepository.save(
-        plainToInstance(UserRoleEntity, { userId: user.id, roleId: role.id }),
-      );
+      // Create or update ProfileSettingEntity
+      const profile = await this.profileSettingRepository.findOne({
+        where: { userId: user.id },
+      });
+
+      const profileData = plainToInstance(ProfileSettingEntity, {
+        userId: user.id,
+        isEmailVerified: data.role === RoleType.ADMIN,
+        isPhoneVerified: false,
+        isPasswordReset: true,
+      });
+
+      if (profile) {
+        await this.profileSettingRepository.update(
+          { userId: user.id },
+          profileData,
+        );
+      } else {
+        await this.profileSettingRepository.save(profileData);
+      }
     } catch (error) {
       Logger.error(error);
       throw error;

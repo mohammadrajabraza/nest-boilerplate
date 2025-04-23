@@ -1,5 +1,5 @@
 import { BaseResponseMixin } from '@/common/dto/base-response.dto';
-import { UserDto } from '@/modules/users/dtos/user.dto';
+import { UserDto } from '@/modules/users/domain/user.dto';
 
 class ResponseDto extends UserDto {}
 

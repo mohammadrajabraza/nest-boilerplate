@@ -33,12 +33,11 @@ export class UserDto extends AbstractDto {
     this.lastName = user.lastName;
     this.email = user.email;
     this.phone = user.phone;
-
     if (user.userRoles && user.userRoles.length > 0) {
-      const role =
-        user.userRoles.find(
-          (userRole) => userRole.role.name === options?.role,
-        ) ?? null;
+      const role = options?.role
+        ? user.userRoles.find((userRole) => userRole.role.name === options.role)
+        : user.userRoles[0]; // Fallback to first role if no options provided
+
       this.role = isRole(role?.role.name || null);
     } else {
       throw new Error('Invalid role');

@@ -63,12 +63,13 @@ export class AuthService {
       throw new UnauthorizedException(errorMessage.AUTH.INVALID_CREDENTIALS);
     }
 
-    const isVerified = await this.userService.checkIsEmailVerified(user.id);
-    if (!isVerified) {
+    const settings = await this.userService.getUserSettings(user.id);
+
+    if (!settings.isEmailVerified) {
       throw new UnauthorizedException(errorMessage.AUTH.EMAIL_NOT_VERIFIED);
     }
 
-    return user;
+    return { user, isPasswordReset: settings.isPasswordReset };
   }
 
   async startSession(
@@ -265,7 +266,7 @@ export class AuthService {
         provider: AuthProviders.GOOGLE,
         googleId: data.providerId,
         role: RoleType.USER,
-        password: 'invalid',
+        password: 'invalid' as string,
       });
 
       return user;

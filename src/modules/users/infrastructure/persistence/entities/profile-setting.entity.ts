@@ -10,6 +10,9 @@ export class ProfileSettingEntity extends AbstractEntity {
   @Column({ nullable: true, type: 'boolean', default: false })
   isPhoneVerified: boolean;
 
+  @Column({ nullable: true, type: 'boolean', default: true })
+  isPasswordReset: boolean;
+
   @Column({ nullable: false, type: 'uuid', unique: true })
   userId: string;
 

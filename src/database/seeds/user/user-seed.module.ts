@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+  import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { UserSeedService } from './user-seed.service';
@@ -6,6 +6,7 @@ import { UserEntity } from '@/modules/users/infrastructure/persistence/entities/
 import { RoleEntity } from '@/modules/roles/infrastructure/persistence/entities/role.entity';
 import { CompanyEntity } from '@/modules/companies/infrastructure/persistence/entities/company.entity';
 import { UserRoleEntity } from '@/modules/roles/infrastructure/persistence/entities/user-role.entity';
+import { ProfileSettingEntity } from '@/modules/users/infrastructure/persistence/entities/profile-setting.entity';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UserRoleEntity } from '@/modules/roles/infrastructure/persistence/entit
       RoleEntity,
       CompanyEntity,
       UserRoleEntity,
+      ProfileSettingEntity
     ]),
   ],
   providers: [UserSeedService],

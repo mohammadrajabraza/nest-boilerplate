@@ -1,10 +1,12 @@
 const ErrorMessage = {
   USER: {
     NOT_FOUND: 'User not found!',
+    FIND_ALL_FAILED: 'falied to fetch users!',
     FIND_ONE_FAILED: 'User found failed!',
     CREATION_FAILED: 'Failed to create user!',
     ALREADY_EXISTS: 'User already exists',
     UPDATION_FAILED: 'Failed to update user',
+    DELETION_FAILED: 'Failed to delete user',
   },
   ROLE: {
     NOT_FOUND: 'Role not found!',

@@ -16,6 +16,7 @@ export class LoginMapper {
     user: UserEntity,
     role: RoleType,
     tokens: Record<'access' | 'refresh', { token: string; expiresIn: number }>,
+    isPasswordReset: boolean,
   ) {
     const userData = user.toDto({ role });
 
@@ -43,6 +44,7 @@ export class LoginMapper {
     const data = new LoginResponseDto();
     data.user = userData;
     data.tokens = tokensDto;
+    data.isPasswordReset = isPasswordReset;
 
     return new EmailLoginResponseDto(
       data,

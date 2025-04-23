@@ -95,6 +95,55 @@ export class MailService {
     });
   }
 
+  async createUser(
+    mailData: MailData<{ hash: string; password: string }>,
+  ): Promise<void> {
+    const i18n = I18nContext.current();
+    let emailConfirmTitle: MaybeType<string>;
+    let text1: MaybeType<string>;
+    let text2: MaybeType<string>;
+    let text3: MaybeType<string>;
+    let passwordText: MaybeType<string>;
+
+    if (i18n) {
+      [emailConfirmTitle, text1, text2, text3] = await Promise.all([
+        i18n.t('common.confirmEmail'),
+        i18n.t('confirm-email.text1'),
+        i18n.t('confirm-email.text2'),
+        i18n.t('confirm-email.text3'),
+        i18n.t('confirm-email.passwordText'),
+      ]);
+    }
+
+    const url = new URL(
+      this.apiConfigService.frontendDomain + '/confirm-email',
+    );
+    url.searchParams.set('hash', mailData.data.hash);
+
+    await this.sendMail({
+      to: mailData.to,
+      subject: emailConfirmTitle,
+      text: `${url.toString()} ${emailConfirmTitle}`,
+      templatePath: path.join(
+        this.apiConfigService.workingDirectory,
+        'src',
+        'mail',
+        'mail-templates',
+        'create-user.hbs',
+      ),
+      context: {
+        title: emailConfirmTitle,
+        url: url.toString(),
+        actionTitle: emailConfirmTitle,
+        app_name: this.apiConfigService.appConfig.name,
+        text1,
+        text2,
+        text3,
+        password: mailData.data.password,
+      },
+    });
+  }
+
   async forgotPassword(
     mailData: MailData<{ hash: string; tokenExpires: number }>,
   ): Promise<void> {

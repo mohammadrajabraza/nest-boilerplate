@@ -9,8 +9,8 @@ import {
 } from 'typeorm';
 import { AbstractEntity } from '@/common/abstract.entity';
 import { UseDto } from '@/decorators/use-dto.decorator';
-import type { UserDtoOptions } from '@/modules/users/dtos/user.dto';
-import { UserDto } from '@/modules/users/dtos/user.dto';
+import type { UserDtoOptions } from '@/modules/users/domain/user.dto';
+import { UserDto } from '@/modules/users/domain/user.dto';
 import { CompanyEntity } from '@/modules/companies/infrastructure/persistence/entities/company.entity';
 import { UserRoleEntity } from '@/modules/roles/infrastructure/persistence/entities/user-role.entity';
 import { ProfileSettingEntity } from './profile-setting.entity';
@@ -44,7 +44,7 @@ export class UserEntity extends AbstractEntity<UserDto, UserDtoOptions> {
   authProviders: string[];
 
   @Column({ type: 'text', nullable: true })
-  googleId: string;
+  googleId?: string;
 
   @Column({ type: 'text', nullable: true })
   profilePicture: string;

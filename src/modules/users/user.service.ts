@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   HttpException,
   Injectable,
@@ -7,6 +8,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcrypt';
 import { UserEntity } from './infrastructure/persistence/entities/user.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import errorMessage from '@/constants/error-message';
@@ -17,9 +19,23 @@ import { UserRoleEntity } from '../roles/infrastructure/persistence/entities/use
 import toSafeAsync from '@/utils/to-safe-async';
 import { plainToInstance } from 'class-transformer';
 import { ProfileSettingEntity } from './infrastructure/persistence/entities/profile-setting.entity';
+import { isRole } from '@/utils/is-role';
+import { TokenType } from '@/constants/token-type';
+import { AuthProviders } from '@/constants/auth-providers';
+import { UpdateUserBodyDto } from './dtos/body/update-user.dto';
 
-type CreateUserData = EmailSignupBodyDto &
-  ({ provider?: 'google'; googleId: string | number } | { provider?: 'email' });
+type CreateUserData = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  role: RoleType;
+  password: string;
+  companyId?: string | null;
+  provider?: AuthProviders;
+  googleId?: string | null;
+  isPasswordReset?: boolean;
+};
 
 @Injectable()
 export class UserService {
@@ -32,6 +48,38 @@ export class UserService {
     @InjectRepository(ProfileSettingEntity)
     private profileSettingRepository: Repository<ProfileSettingEntity>,
   ) {}
+
+  async listUsers(
+    payload: Omit<FindOptionsWhere<UserEntity>, 'roleId'> & {
+      role?: RoleType;
+    } = {},
+  ) {
+    const { role, ...rest } = payload;
+    const where: FindOptionsWhere<UserEntity> = rest;
+
+    if (role) {
+      where.userRoles = {
+        role: {
+          name: role,
+        },
+      };
+    }
+
+    try {
+      const users = await this.userRepository.find({
+        where,
+        relations: {
+          userRoles: {
+            role: true,
+          },
+        },
+      });
+      return users;
+    } catch (error) {
+      Logger.error(`Error in userService.listUsers ${error.message}`);
+      throw new InternalServerErrorException(errorMessage.USER.FIND_ALL_FAILED);
+    }
+  }
 
   async findOne(
     payload: Omit<FindOptionsWhere<UserEntity>, 'roleId'> & { role?: RoleType },
@@ -72,44 +120,6 @@ export class UserService {
     }
   }
 
-  async create(data: CreateUserData) {
-    const role = await this.roleService.getRoleByName(data.role);
-
-    try {
-      const userEntity = new UserEntity();
-      userEntity.firstName = data.firstName;
-      userEntity.lastName = data.lastName;
-      userEntity.email = data.email;
-      userEntity.phone = data.phone;
-      userEntity.password = data.password;
-      if (data.companyId) {
-        userEntity.companyId = data.companyId;
-      }
-      if (data.provider) {
-        userEntity.authProviders.push(data.provider);
-        if (data.provider === 'google') {
-          userEntity.googleId = data.googleId.toString();
-        }
-      }
-      const user = await this.userRepository.save(userEntity);
-      const userRoleEntity = new UserRoleEntity();
-      userRoleEntity.userId = user.id;
-      userRoleEntity.roleId = role.id;
-      const profileSettingEntity = new ProfileSettingEntity();
-      profileSettingEntity.isEmailVerified = false;
-      profileSettingEntity.isPhoneVerified = false;
-      profileSettingEntity.userId = user.id;
-      await Promise.all([
-        this.userRoleRepository.save(userRoleEntity),
-        this.profileSettingRepository.save(profileSettingEntity),
-      ]);
-      return user;
-    } catch (error) {
-      Logger.error(error);
-      throw new InternalServerErrorException(errorMessage.USER.CREATION_FAILED);
-    }
-  }
-
   async updateUserProfileSetting(id: Uuid, data: { isEmailVerified: boolean }) {
     const setting = await this.findUserProfileSetting(id);
 
@@ -123,11 +133,87 @@ export class UserService {
     }
   }
 
+  async create(data: CreateUserData) {
+    const role = await this.roleService.getRoleByName(data.role);
+    try {
+      const userEntity = new UserEntity();
+      userEntity.firstName = data.firstName;
+      userEntity.lastName = data.lastName;
+      userEntity.email = data.email;
+      userEntity.phone = data.phone;
+      userEntity.password = data.password;
+
+      if (data.companyId) {
+        userEntity.companyId = data.companyId;
+      }
+
+      if (data.provider === 'google') {
+        if (!data.googleId) {
+          throw new BadRequestException(
+            'Google ID is required for Google signup',
+          );
+        }
+        userEntity.googleId = data.googleId;
+      }
+
+      const user = await this.userRepository.save(userEntity);
+
+      const userRoleEntity = new UserRoleEntity();
+      userRoleEntity.userId = user.id;
+      userRoleEntity.roleId = role.id;
+
+      const profileSettingEntity = new ProfileSettingEntity();
+      profileSettingEntity.isEmailVerified = false;
+      profileSettingEntity.isPhoneVerified = false;
+      profileSettingEntity.isPasswordReset =
+        data.isPasswordReset === undefined || data.isPasswordReset === null
+          ? true
+          : data.isPasswordReset;
+      profileSettingEntity.userId = user.id;
+
+      await Promise.all([
+        this.userRoleRepository.save(userRoleEntity),
+        this.profileSettingRepository.save(profileSettingEntity),
+      ]);
+
+      return this.findOne({ id: user.id });
+    } catch (error) {
+      Logger.error(error);
+      throw new InternalServerErrorException(errorMessage.USER.CREATION_FAILED);
+    }
+  }
+
   public async findUserProfileSetting(userId: Uuid) {
     try {
       const profileSetting = await this.profileSettingRepository.findOneOrFail({
         where: { userId: userId },
       });
+
+      return profileSetting;
+    } catch (error) {
+      Logger.error(error);
+      throw new InternalServerErrorException(
+        errorMessage.PROFILE_SETTING.NOT_FOUND,
+      );
+    }
+  }
+
+  public async getUserSettings(userId: Uuid) {
+    try {
+      const profileSetting = await this.profileSettingRepository.findOneOrFail({
+        where: { userId: userId },
+      });
+
+      // if (!profileSetting) {
+      //   const setting = await this.profileSettingRepository.save(
+      //     plainToInstance(ProfileSettingEntity, {
+      //       userId,
+      //       isEmailVerified: true,
+      //       isPhoneVerified: false,
+      //     }),
+      //   );
+      //   return setting.isEmailVerified;
+      // }
 
       return profileSetting;
     } catch (error) {
@@ -180,4 +266,53 @@ export class UserService {
       throw new InternalServerErrorException(errorMessage.USER.UPDATION_FAILED);
     }
   }
+
+  async updateUserWithRoleAndProfile(userId: Uuid, data: UpdateUserBodyDto) {
+    const existingUser = await this.findOne({ id: userId });
+
+    const isEmailChanged = existingUser.email !== data.email;
+
+    const updatedUser = await this.userRepository.save({
+      ...existingUser,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      phone: data.phone,
+      companyId: data.companyId,
+      password: data.password, // hash it if needed here
+    });
+
+    // Update role if changed
+    const roleEntity = await this.roleService.getRoleByName(data.role);
+    const userRole = await this.userRoleRepository.findOneByOrFail({ userId });
+    userRole.roleId = roleEntity.id;
+    await this.userRoleRepository.save(userRole);
+
+    const profile = await this.findUserProfileSetting(userId);
+    if (isEmailChanged) {
+      profile.isEmailVerified = false;
+    }
+    await this.profileSettingRepository.save(profile);
+
+    return this.findOne({ id: userId }); 
+  }
+
+
+  async deleteUser(userId: Uuid): Promise<void> {
+    const user = await this.findOne({ id: userId });
+    if (!user) {
+      throw new NotFoundException(errorMessage.USER.NOT_FOUND);
+    }
+  
+    try {
+      await this.profileSettingRepository.delete({ userId });
+      await this.userRoleRepository.delete({ userId });
+      await this.userRepository.delete({ id: userId });
+
+    } catch (error) {
+      Logger.error(error);
+      throw new InternalServerErrorException(errorMessage.USER.DELETION_FAILED);
+    }
+  }
+  
 }

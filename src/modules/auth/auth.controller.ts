@@ -39,7 +39,6 @@ import { ResetPasswordQueryDto } from './dtos/query/reset-password.dto';
 import { ResetPasswordBodyDto } from './dtos/body/reset-password.dto';
 import { ResetPasswordResponseDto } from './dtos/response/reset-password.dto';
 import { CurrentUser } from '@/decorators/current-user.decorator';
-import { UserDto } from '../users/dtos/user.dto';
 import { GetMeResponseDto } from './dtos/response/get-me.dto';
 import { Public } from '@/decorators/public.decorator';
 import { RefreshGuard } from '@/guards/refresh.guard';
@@ -60,6 +59,7 @@ import { Roles } from '@/decorators/role.decorator';
 import { EmailSignupResponseDto } from './dtos/response/email-signup.dto';
 import { BaseResponseMixin } from '@/common/dto/base-response.dto';
 import { RefreshTokenResponseDto } from './dtos/response/refresh-token.dto';
+import { UserDto } from '../users/domain/user.dto';
 
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
@@ -84,7 +84,7 @@ export class AuthController {
   })
   @ApiBody({ type: EmailLoginBodyDto })
   async login(@Body() body: EmailLoginBodyDto) {
-    const user = await this.authService.login({
+    const { user, isPasswordReset } = await this.authService.login({
       email: body.email,
       password: body.password,
     });
@@ -99,7 +99,7 @@ export class AuthController {
       deviceToken: body.deviceToken,
     });
 
-    return LoginMapper.toDomain(user, body.role, tokens);
+    return LoginMapper.toDomain(user, body.role, tokens, isPasswordReset);
   }
 
   @Public()
