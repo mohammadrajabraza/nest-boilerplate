@@ -33,3 +33,11 @@ export class PageOptionsDto {
   @StringFieldOptional()
   readonly q?: string;
 }
+
+export type PageOptionsType = {
+  order: Order;
+  page: number;
+  take: number;
+  skip: number;
+  q?: string;
+}

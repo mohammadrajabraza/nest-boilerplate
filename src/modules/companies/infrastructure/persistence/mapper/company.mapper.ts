@@ -7,27 +7,44 @@ import { HttpStatus } from '@nestjs/common';
 import { ListCompanyResponseDto } from '@/modules/companies/dtos/response/list-company.dto';
 import { BaseResponseMixin } from '@/common/dto/base-response.dto';
 import { UpdateCompanyBodyDto } from '@/modules/companies/dtos/body/update-company.dto';
+import { IPageMetaDtoParameters, PageMetaDto } from '@/common/dto/page-meta.dto';
 
 type CompanyAction = 'CREATE' | 'LIST' | 'GET' | 'UPDATE' | 'DELETE';
 
 class CompanyMapper {
-  public static toDomain<TAction extends CompanyAction>(
+  public static toDomain<
+    TAction extends CompanyAction,
+    TOptions extends TAction extends 'LIST'
+    ? IPageMetaDtoParameters['pageOptionsDto']
+    : null = TAction extends 'LIST'
+    ? IPageMetaDtoParameters['pageOptionsDto']
+    : null,
+  >(
     data: TAction extends 'LIST'
       ? CompanyEntity[]
       : TAction extends 'DELETE'
-        ? null
-        : CompanyEntity,
+      ? null
+      : CompanyEntity,
     action: TAction,
+    options?: TOptions,
   ) {
-    if (action === 'LIST' && data && Array.isArray(data)) {
+    if (action === 'LIST' && data && Array.isArray(data) && options) {
       return new ListCompanyResponseDto(
         data.map((i) => i.toDto()),
+        new PageMetaDto({
+          pageOptionsDto: options,
+          itemCount: data.length,
+        }),
         successMessage.COMPANY.LIST,
         HttpStatus.OK,
       );
     } else if (action === 'DELETE' && !data) {
-      const DeleteResponse = BaseResponseMixin(class {});
-      return new DeleteResponse({}, successMessage.COMPANY.DELETE, HttpStatus.OK);
+      const DeleteResponse = BaseResponseMixin(class { });
+      return new DeleteResponse(
+        {},
+        successMessage.COMPANY.DELETE,
+        HttpStatus.OK,
+      );
     } else if (data && !Array.isArray(data)) {
       const response = new CompanyResponseDto(
         data.toDto(),

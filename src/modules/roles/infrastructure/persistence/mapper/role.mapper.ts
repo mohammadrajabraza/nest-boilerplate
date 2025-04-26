@@ -6,26 +6,36 @@ import successMessage from '@/constants/success-message';
 import { HttpStatus } from '@nestjs/common';
 import { ListRoleResponseDto } from '@/modules/roles/dtos/response/list-role.dto';
 import { BaseResponseMixin } from '@/common/dto/base-response.dto';
+import { IPageMetaDtoParameters, PageMetaDto } from '@/common/dto/page-meta.dto';
 
 type RoleAction = 'CREATE' | 'LIST' | 'GET' | 'UPDATE' | 'DELETE';
 
 class RoleMapper {
-  public static toDomain<TAction extends RoleAction>(
-    role: TAction extends 'LIST'
-      ? RoleEntity[]
-      : TAction extends 'DELETE'
+  public static toDomain<TAction extends RoleAction, TOptions extends TAction extends 'LIST'
+    ? IPageMetaDtoParameters['pageOptionsDto']
+    : null = TAction extends 'LIST'
+    ? IPageMetaDtoParameters['pageOptionsDto']
+    : null,>(
+      role: TAction extends 'LIST'
+        ? RoleEntity[]
+        : TAction extends 'DELETE'
         ? null
         : RoleEntity,
-    action: TAction,
-  ) {
-    if (action === 'LIST' && role && Array.isArray(role)) {
+      action: TAction,
+      options: TOptions = {} as TOptions,
+    ) {
+    if (action === 'LIST' && role && Array.isArray(role) && options) {
       return new ListRoleResponseDto(
         role.map((r) => r.toDto()),
+        new PageMetaDto({
+          pageOptionsDto: options,
+          itemCount: role.length,
+        }),
         successMessage.ROLE.LIST,
         HttpStatus.OK,
       );
     } else if (action === 'DELETE' && !role) {
-      const DeleteResponse = BaseResponseMixin(class {});
+      const DeleteResponse = BaseResponseMixin(class { });
       return new DeleteResponse({}, successMessage.ROLE.DELETE, HttpStatus.OK);
     } else if (role && !Array.isArray(role)) {
       const response = new RoleResponseDto(

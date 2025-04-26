@@ -27,12 +27,17 @@ export class UserDto extends AbstractDto {
   @EnumFieldOptional(() => RoleType, { nullable: true })
   role: RoleType;
 
+
+  @StringFieldOptional({ nullable: true })
+  companyId?: string | null;
+
   constructor(user: UserEntity, options?: UserDtoOptions) {
     super(user);
     this.firstName = user.firstName;
     this.lastName = user.lastName;
     this.email = user.email;
     this.phone = user.phone;
+    this.companyId = user.companyId;
     if (user.userRoles && user.userRoles.length > 0) {
       const role = options?.role
         ? user.userRoles.find((userRole) => userRole.role.name === options.role)

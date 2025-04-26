@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { CompanyService } from './company.service';
 import { RoleType } from '@/constants/role-type';
@@ -19,10 +20,13 @@ import CompanyMapper from './infrastructure/persistence/mapper/company.mapper';
 import { ListCompanyResponseDto } from './dtos/response/list-company.dto';
 import { UpdateCompanyBodyDto } from './dtos/body/update-company.dto';
 import { BaseResponseMixin } from '@/common/dto/base-response.dto';
+import { GetCompaniesQueryDto } from './dtos/query/get-companies.dto';
+import { UserService } from '../users/user.service';
+import { In } from 'typeorm';
 
 @Controller({ path: 'companies' })
 export class CompanyController {
-  constructor(private companyService: CompanyService) {}
+  constructor(private companyService: CompanyService, private userService: UserService) {}
 
   @Post('/')
   @HttpCode(HttpStatus.CREATED)
@@ -43,9 +47,18 @@ export class CompanyController {
     type: ListCompanyResponseDto,
   })
   @ApiBearerAuth()
-  async getCompanies() {
-    const companies = await this.companyService.listCompany();
-    return CompanyMapper.toDomain(companies, 'LIST');
+  async getCompanies(@Query() query: GetCompaniesQueryDto) {
+    const { user, ...pageOptions } = query;
+    const options = {
+      ...pageOptions,
+      skip: query.skip,
+    }
+    const companies = await this.companyService.listCompany({
+      ...options,
+      user,
+    });
+
+    return CompanyMapper.toDomain(companies, 'LIST', options);
   }
 
   @Get('/:id')

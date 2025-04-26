@@ -4,14 +4,10 @@ import { ClassField } from '@/decorators/field.decorator';
 import { PageMetaDto } from './page-meta.dto';
 
 export class PageDto<T> {
-  @ApiProperty({ isArray: true })
-  readonly data: T[];
-
   @ClassField(() => PageMetaDto)
-  readonly meta: PageMetaDto;
+  public meta: PageMetaDto;
 
-  constructor(data: T[], meta: PageMetaDto) {
-    this.data = data;
+  constructor(meta: PageMetaDto) {
     this.meta = meta;
   }
 }

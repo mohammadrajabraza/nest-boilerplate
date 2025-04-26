@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { RoleService } from './role.service';
 import { Roles } from '@/decorators/role.decorator';
@@ -19,6 +20,7 @@ import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { RoleResponseDto } from './dtos/response/role.dto';
 import { ListRoleResponseDto } from './dtos/response/list-role.dto';
 import { BaseResponseMixin } from '@/common/dto/base-response.dto';
+import { GetRolesQueryDto } from './dtos/query/get-roles.dto';
 
 @Controller({ path: 'roles', version: '1' })
 export class RoleController {
@@ -45,9 +47,10 @@ export class RoleController {
     status: HttpStatus.OK,
   })
   @ApiBearerAuth()
-  async getRoles() {
-    const roles = await this.roleService.listRoles();
-    return RoleMapper.toDomain(roles, 'LIST');
+  async getRoles(@Query() query: GetRolesQueryDto) {
+    const options = { ...query, skip: query.skip };
+    const roles = await this.roleService.listRoles(options);
+    return RoleMapper.toDomain(roles, 'LIST', options);
   }
 
   @Get('/:id')

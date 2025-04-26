@@ -29,6 +29,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UpdateUserBodyDto } from './dtos/body/update-user.dto';
 import { BaseResponseMixin } from '@/common/dto/base-response.dto';
 import errorMessage from '@/constants/error-message';
+import { GetUsersQueryDto } from './dtos/query/get-users.dto';
 
 @Controller({ path: 'users', version: '1' })
 export class UserController {
@@ -54,11 +55,17 @@ export class UserController {
     status: HttpStatus.OK,
   })
   @ApiBearerAuth()
-  async getUsers(@Query('role') role?: RoleType) {
+  async getUsers(@Query() query: GetUsersQueryDto) {
     // Create the payload object expected by listUsers
-    const payload = role ? { role } : {};
-    const users = await this.userService.listUsers(payload);
-    return UserMapper.toDomain(users, 'LIST');
+    const { role, ...pageOptions } = query;
+    const options = { ...pageOptions, skip: query.skip }
+    const users = await this.userService.listUsers(
+      {
+        role: role || undefined,
+      },
+      options,
+    );
+    return UserMapper.toDomain(users, 'LIST', options);
   }
 
   @Post('/')

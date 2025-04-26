@@ -4,10 +4,10 @@ import { JwtService } from '@nestjs/jwt';
 import { SharedModule } from '@/shared/shared.module';
 import { ApiConfigService } from '@/shared/services/api-config.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TokenEntity } from './infrastructure/persistence/entities/token.entity';
+import entities from '@/database/entities';
 
 @Module({
-  imports: [SharedModule, TypeOrmModule.forFeature([TokenEntity])],
+  imports: [SharedModule, TypeOrmModule.forFeature(entities)],
   providers: [TokenService, JwtService, ApiConfigService],
   exports: [TokenService],
 })

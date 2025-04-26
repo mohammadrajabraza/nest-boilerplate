@@ -1,8 +1,8 @@
 import { BooleanField, NumberField } from '@/decorators/field.decorator';
-import type { PageOptionsDto } from './page-options.dto';
+import type { PageOptionsType } from './page-options.dto';
 
-interface IPageMetaDtoParameters {
-  pageOptionsDto: PageOptionsDto;
+export interface IPageMetaDtoParameters {
+  pageOptionsDto: PageOptionsType;
   itemCount: number;
 }
 
@@ -34,3 +34,4 @@ export class PageMetaDto {
     this.hasNextPage = this.page < this.pageCount;
   }
 }
+

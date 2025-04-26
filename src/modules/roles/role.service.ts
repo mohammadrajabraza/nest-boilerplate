@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RoleEntity } from './infrastructure/persistence/entities/role.entity';
-import { Repository } from 'typeorm';
+import { FindOptions, FindOptionsWhere, Like, Repository } from 'typeorm';
 import errorMessage from '@/constants/error-message';
 import toSafeAsync from '@/utils/to-safe-async';
 import { CreateRoleBodyDto } from './dtos/body/create-role.dto';
@@ -16,6 +16,7 @@ import CreateRoleMapper from './infrastructure/persistence/mapper/role.mapper';
 import RoleMapper from './infrastructure/persistence/mapper/role.mapper';
 import { UpdateRoleBodyDto } from './dtos/body/update-role.dto';
 import { UserRoleEntity } from './infrastructure/persistence/entities/user-role.entity';
+import { PageOptionsType } from '@/common/dto/page-options.dto';
 
 @Injectable()
 export class RoleService {
@@ -45,9 +46,17 @@ export class RoleService {
     }
   }
 
-  async listRoles() {
+  async listRoles(options?: PageOptionsType) {
     try {
-      return await this.roleRepository.find();
+      const where: FindOptionsWhere<RoleEntity> = {};
+      if (options?.q && typeof options.q === 'string') {
+        where.name = Like(options.q);
+      }
+      return await this.roleRepository.find({
+        skip: options?.skip,
+        take: options?.take,
+        where,
+      });
     } catch (error) {
       Logger.error(error);
       if (error instanceof HttpException) {

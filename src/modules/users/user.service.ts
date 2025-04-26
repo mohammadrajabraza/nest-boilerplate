@@ -10,7 +10,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { UserEntity } from './infrastructure/persistence/entities/user.entity';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { FindManyOptions, FindOptions, FindOptionsWhere, Like, Repository } from 'typeorm';
 import errorMessage from '@/constants/error-message';
 import { RoleType } from '@/constants/role-type';
 import { RoleService } from '../roles/role.service';
@@ -23,6 +23,7 @@ import { isRole } from '@/utils/is-role';
 import { TokenType } from '@/constants/token-type';
 import { AuthProviders } from '@/constants/auth-providers';
 import { UpdateUserBodyDto } from './dtos/body/update-user.dto';
+import { PageOptionsType } from '@/common/dto/page-options.dto';
 
 type CreateUserData = {
   firstName: string;
@@ -47,15 +48,16 @@ export class UserService {
     private userRoleRepository: Repository<UserRoleEntity>,
     @InjectRepository(ProfileSettingEntity)
     private profileSettingRepository: Repository<ProfileSettingEntity>,
-  ) {}
+  ) { }
 
   async listUsers(
     payload: Omit<FindOptionsWhere<UserEntity>, 'roleId'> & {
       role?: RoleType;
     } = {},
+    options?: PageOptionsType
   ) {
     const { role, ...rest } = payload;
-    const where: FindOptionsWhere<UserEntity> = rest;
+    let where: FindOptionsWhere<UserEntity>[] | FindOptionsWhere<UserEntity> = rest;
 
     if (role) {
       where.userRoles = {
@@ -65,15 +67,31 @@ export class UserService {
       };
     }
 
-    try {
-      const users = await this.userRepository.find({
-        where,
-        relations: {
-          userRoles: {
-            role: true,
-          },
+    if (options?.q && typeof options.q === 'string') {
+      const currentWhere = (typeof where === 'object'? where: {})
+      where = [
+        { ...currentWhere, firstName: Like(options.q) },
+        { ...currentWhere, lastName: Like(options.q) },
+        { ...currentWhere, email: Like(options.q )},
+        { ...currentWhere, fullName: Like(options.q) }
+      ]
+    }
+
+    const findOptions: FindManyOptions<UserEntity> = {
+      where,
+      relations: {
+        userRoles: {
+          role: true,
         },
-      });
+      },  
+    }
+    if (options && options.take && options.skip) {
+      findOptions.take = options.take;
+      findOptions.skip = options.skip;
+    }
+
+    try {
+      const users = await this.userRepository.find(findOptions);
       return users;
     } catch (error) {
       Logger.error(`Error in userService.listUsers ${error.message}`);
@@ -120,7 +138,7 @@ export class UserService {
     }
   }
 
-  async updateUserProfileSetting(id: Uuid, data: Partial<{ isEmailVerified: boolean, isPasswordReset: boolean}>) {
+  async updateUserProfileSetting(id: Uuid, data: Partial<{ isEmailVerified: boolean, isPasswordReset: boolean }>) {
     const setting = await this.findUserProfileSetting(id);
 
     try {
@@ -294,7 +312,7 @@ export class UserService {
     }
     await this.profileSettingRepository.save(profile);
 
-    return this.findOne({ id: userId }); 
+    return this.findOne({ id: userId });
   }
 
 
@@ -303,7 +321,7 @@ export class UserService {
     if (!user) {
       throw new NotFoundException(errorMessage.USER.NOT_FOUND);
     }
-  
+
     try {
       await this.profileSettingRepository.delete({ userId });
       await this.userRoleRepository.delete({ userId });
@@ -314,5 +332,5 @@ export class UserService {
       throw new InternalServerErrorException(errorMessage.USER.DELETION_FAILED);
     }
   }
-  
+
 }
