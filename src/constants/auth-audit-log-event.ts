@@ -20,5 +20,4 @@ export enum AuthAuditLogEvent {
   EMAIL_VERIFIED_ERROR = 'email_verified_error',
   EMAIL_RESEND_SUCCESS = 'email_resend_success',
   EMAIL_RESEND_ERROR = 'email_resend_error',
-  SOME_ERROR = 'some_error',
 }

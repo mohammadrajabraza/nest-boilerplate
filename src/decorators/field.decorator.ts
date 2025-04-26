@@ -16,7 +16,6 @@ import {
   IsString,
   IsUrl,
   IsUUID,
-  Matches,
   Max,
   MaxLength,
   Min,
@@ -186,7 +185,7 @@ export function PasswordField(
   }
 
   if (options.match) {
-    decorators.push(Match(options.match))
+    decorators.push(Match(options.match));
   }
 
   return applyDecorators(...decorators);

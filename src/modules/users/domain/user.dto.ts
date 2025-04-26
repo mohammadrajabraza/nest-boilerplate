@@ -27,7 +27,6 @@ export class UserDto extends AbstractDto {
   @EnumFieldOptional(() => RoleType, { nullable: true })
   role: RoleType;
 
-
   @StringFieldOptional({ nullable: true })
   companyId?: string | null;
 

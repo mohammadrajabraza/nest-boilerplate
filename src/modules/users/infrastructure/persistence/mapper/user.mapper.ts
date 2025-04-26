@@ -44,7 +44,7 @@ class UserMapper {
         HttpStatus.OK,
       );
     } else if (action === 'DELETE' && !user) {
-      const DeleteResponse = BaseResponseMixin<{}, false>(class {});
+      const DeleteResponse = BaseResponseMixin<object, false>(class {});
       return new DeleteResponse({}, successMessage.USER.DELETE, HttpStatus.OK);
     } else if (user && !Array.isArray(user)) {
       const response = new UserResponseDto(

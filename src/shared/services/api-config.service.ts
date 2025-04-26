@@ -125,7 +125,9 @@ export class ApiConfigService {
         redirect: {
           success: this.get('auth.confirm-email.redirect.success'),
           error: this.get('auth.confirm-email.redirect.error'),
-          'password-reset': this.get('auth.confirm-email.redirect.password-reset')
+          'password-reset': this.get(
+            'auth.confirm-email.redirect.password-reset',
+          ),
         },
       },
       [TokenType.PASSWORD_RESET]: {

@@ -4,7 +4,6 @@ import {
   NumberField,
   BooleanField,
 } from '@/decorators/field.decorator';
-import { PageDto } from './page.dto';
 import { PageMetaDto } from './page-meta.dto';
 
 export interface IBaseListResponse<TData> {
@@ -22,15 +21,24 @@ export interface IBaseResponse<TData> {
   success: boolean;
 }
 
-type BaseListResponseType<T> = new (data: T[], meta: PageMetaDto, message: string, statusCode?: number) => IBaseListResponse<T>
+type BaseListResponseType<T> = new (
+  data: T[],
+  meta: PageMetaDto,
+  message: string,
+  statusCode?: number,
+) => IBaseListResponse<T>;
 
-type BaseResponseType<T> = new (data: T, message: string, statusCode?: number) => IBaseResponse<T>
+type BaseResponseType<T> = new (
+  data: T,
+  message: string,
+  statusCode?: number,
+) => IBaseResponse<T>;
 
-export function BaseResponseMixin<T, TArray extends boolean = false, TResult = TArray extends true ? BaseListResponseType<T> : BaseResponseType<T>>(
-  DtoClass: new (...args: any[]) => T,
-  options?: { array?: TArray },
-): TResult {
-
+export function BaseResponseMixin<
+  T,
+  TArray extends boolean = false,
+  TResult = TArray extends true ? BaseListResponseType<T> : BaseResponseType<T>,
+>(DtoClass: new (...args: any[]) => T, options?: { array?: TArray }): TResult {
   class BaseResponse implements IBaseResponse<T> {
     @ClassField(() => DtoClass, {
       description: 'The response data',
@@ -50,11 +58,7 @@ export function BaseResponseMixin<T, TArray extends boolean = false, TResult = T
     @BooleanField({ description: 'Indicates if the request was successful' })
     success: boolean;
 
-    constructor(
-      data: T,
-      message: string,
-      statusCode: number,
-    ) {
+    constructor(data: T, message: string, statusCode: number) {
       this.data = data;
       this.message = message;
       this.statusCode = statusCode;
@@ -69,7 +73,6 @@ export function BaseResponseMixin<T, TArray extends boolean = false, TResult = T
         isArray: true,
       })
       public data: T[];
-
 
       @ClassField(() => PageMetaDto)
       public meta: PageMetaDto;
@@ -101,9 +104,8 @@ export function BaseResponseMixin<T, TArray extends boolean = false, TResult = T
       }
     }
 
-    return BaseListResponse as TResult
+    return BaseListResponse as TResult;
   }
-
 
   return BaseResponse as TResult;
 }

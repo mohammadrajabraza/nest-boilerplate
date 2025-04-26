@@ -142,9 +142,11 @@ export class AuthController {
         query.token,
       );
 
-      const { userProfileSetting } = await this.authService.verifyEmail(payload.userId);
+      const { userProfileSetting } = await this.authService.verifyEmail(
+        payload.userId,
+      );
       if (!userProfileSetting.isPasswordReset) {
-        return { url : redirect['password-reset'] }
+        return { url: redirect['password-reset'] };
       }
       return { url: redirect.success };
     } catch (error) {
@@ -279,7 +281,7 @@ export class AuthController {
   @ApiBody({ type: ChangePasswordBodyDto })
   async changePassword(
     @Body() body: ChangePasswordBodyDto,
-    @CurrentUser() user: UserDto
+    @CurrentUser() user: UserDto,
   ) {
     await this.authService.resetPassword(user.id, body.password);
     return new ChangePasswordResponseDto(

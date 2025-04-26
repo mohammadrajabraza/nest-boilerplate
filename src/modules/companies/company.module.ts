@@ -17,4 +17,4 @@ import entities from '@/database/entities';
   providers: [CompanyService, UserService],
   exports: [CompanyService],
 })
-export class CompanyModule { }
+export class CompanyModule {}

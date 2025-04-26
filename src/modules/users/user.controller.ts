@@ -23,7 +23,6 @@ import { MailService } from '@/mail/mail.service';
 import { TokenService } from '../token/token.service';
 import { AuthProviders } from '@/constants/auth-providers';
 import { TokenType } from '@/constants/token-type';
-import { isRole } from '@/utils/is-role';
 import { GeneratorService } from '@/shared/services/generator.service';
 import { JwtService } from '@nestjs/jwt';
 import { UpdateUserBodyDto } from './dtos/body/update-user.dto';
@@ -58,7 +57,7 @@ export class UserController {
   async getUsers(@Query() query: GetUsersQueryDto) {
     // Create the payload object expected by listUsers
     const { role, ...pageOptions } = query;
-    const options = { ...pageOptions, skip: query.skip }
+    const options = { ...pageOptions, skip: query.skip };
     const users = await this.userService.listUsers(
       {
         role: role || undefined,

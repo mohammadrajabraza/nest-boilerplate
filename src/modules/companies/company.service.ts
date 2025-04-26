@@ -8,14 +8,20 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CompanyEntity } from './infrastructure/persistence/entities/company.entity';
-import { FindManyOptions, FindOptionsWhere, In, Like, Repository } from 'typeorm';
+import {
+  FindManyOptions,
+  FindOptionsWhere,
+  In,
+  Like,
+  Repository,
+} from 'typeorm';
 import errorMessage from '@/constants/error-message';
 import { CreateCompanyBodyDto } from './dtos/body/create-company.dto';
 import CompanyMapper from './infrastructure/persistence/mapper/company.mapper';
 import { UpdateCompanyBodyDto } from './dtos/body/update-company.dto';
 import toSafeAsync from '@/utils/to-safe-async';
 import { UserEntity } from '../users/infrastructure/persistence/entities/user.entity';
-import { PageOptionsDto, PageOptionsType } from '@/common/dto/page-options.dto';
+import { PageOptionsType } from '@/common/dto/page-options.dto';
 import { RoleType } from '@/constants/role-type';
 
 @Injectable()
@@ -64,12 +70,12 @@ export class CompanyService {
     try {
       const where: FindOptionsWhere<CompanyEntity> = {};
       if (options?.q && typeof options.q === 'string') {
-        where.name = Like(options.q)
+        where.name = Like(options.q);
       }
 
       const findOptions: FindManyOptions<CompanyEntity> = {
         where,
-      }
+      };
 
       if (options && options.take && options.skip) {
         findOptions.take = options.take;
@@ -82,19 +88,19 @@ export class CompanyService {
           users: {
             userRoles: {
               role: {
-                name: In([RoleType.GUEST, RoleType.USER])
-              }
-            }
-          }
-        }
+                name: In([RoleType.GUEST, RoleType.USER]),
+              },
+            },
+          },
+        };
         findOptions.relations = {
           ...(findOptions.relations || {}),
           users: {
             userRoles: {
               role: true,
-            }
-          }
-        }
+            },
+          },
+        };
       }
 
       const companies = await this.companyRepository.find(findOptions);

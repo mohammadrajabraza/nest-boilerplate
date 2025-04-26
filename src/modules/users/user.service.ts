@@ -8,19 +8,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcrypt';
 import { UserEntity } from './infrastructure/persistence/entities/user.entity';
-import { FindManyOptions, FindOptions, FindOptionsWhere, Like, Repository } from 'typeorm';
+import { FindManyOptions, FindOptionsWhere, Like, Repository } from 'typeorm';
 import errorMessage from '@/constants/error-message';
 import { RoleType } from '@/constants/role-type';
 import { RoleService } from '../roles/role.service';
-import { EmailSignupBodyDto } from '../auth/dtos/body/email-signup.dto';
 import { UserRoleEntity } from '../roles/infrastructure/persistence/entities/user-role.entity';
 import toSafeAsync from '@/utils/to-safe-async';
 import { plainToInstance } from 'class-transformer';
 import { ProfileSettingEntity } from './infrastructure/persistence/entities/profile-setting.entity';
-import { isRole } from '@/utils/is-role';
-import { TokenType } from '@/constants/token-type';
 import { AuthProviders } from '@/constants/auth-providers';
 import { UpdateUserBodyDto } from './dtos/body/update-user.dto';
 import { PageOptionsType } from '@/common/dto/page-options.dto';
@@ -48,16 +44,17 @@ export class UserService {
     private userRoleRepository: Repository<UserRoleEntity>,
     @InjectRepository(ProfileSettingEntity)
     private profileSettingRepository: Repository<ProfileSettingEntity>,
-  ) { }
+  ) {}
 
   async listUsers(
     payload: Omit<FindOptionsWhere<UserEntity>, 'roleId'> & {
       role?: RoleType;
     } = {},
-    options?: PageOptionsType
+    options?: PageOptionsType,
   ) {
     const { role, ...rest } = payload;
-    let where: FindOptionsWhere<UserEntity>[] | FindOptionsWhere<UserEntity> = rest;
+    let where: FindOptionsWhere<UserEntity>[] | FindOptionsWhere<UserEntity> =
+      rest;
 
     if (role) {
       where.userRoles = {
@@ -68,13 +65,13 @@ export class UserService {
     }
 
     if (options?.q && typeof options.q === 'string') {
-      const currentWhere = (typeof where === 'object'? where: {})
+      const currentWhere = typeof where === 'object' ? where : {};
       where = [
         { ...currentWhere, firstName: Like(options.q) },
         { ...currentWhere, lastName: Like(options.q) },
-        { ...currentWhere, email: Like(options.q )},
-        { ...currentWhere, fullName: Like(options.q) }
-      ]
+        { ...currentWhere, email: Like(options.q) },
+        { ...currentWhere, fullName: Like(options.q) },
+      ];
     }
 
     const findOptions: FindManyOptions<UserEntity> = {
@@ -83,8 +80,8 @@ export class UserService {
         userRoles: {
           role: true,
         },
-      },  
-    }
+      },
+    };
     if (options && options.take && options.skip) {
       findOptions.take = options.take;
       findOptions.skip = options.skip;
@@ -138,7 +135,10 @@ export class UserService {
     }
   }
 
-  async updateUserProfileSetting(id: Uuid, data: Partial<{ isEmailVerified: boolean, isPasswordReset: boolean }>) {
+  async updateUserProfileSetting(
+    id: Uuid,
+    data: Partial<{ isEmailVerified: boolean; isPasswordReset: boolean }>,
+  ) {
     const setting = await this.findUserProfileSetting(id);
 
     try {
@@ -302,19 +302,20 @@ export class UserService {
 
     // Update role if changed
     const roleEntity = await this.roleService.getRoleByName(data.role);
-    const userRole = await this.userRoleRepository.findOneByOrFail({ userId });
+    const userRole = await this.userRoleRepository.findOneByOrFail({
+      userId: updatedUser.id,
+    });
     userRole.roleId = roleEntity.id;
     await this.userRoleRepository.save(userRole);
 
-    const profile = await this.findUserProfileSetting(userId);
+    const profile = await this.findUserProfileSetting(updatedUser.id);
     if (isEmailChanged) {
       profile.isEmailVerified = false;
     }
     await this.profileSettingRepository.save(profile);
 
-    return this.findOne({ id: userId });
+    return this.findOne({ id: updatedUser.id });
   }
-
 
   async deleteUser(userId: Uuid): Promise<void> {
     const user = await this.findOne({ id: userId });
@@ -326,11 +327,9 @@ export class UserService {
       await this.profileSettingRepository.delete({ userId });
       await this.userRoleRepository.delete({ userId });
       await this.userRepository.delete({ id: userId });
-
     } catch (error) {
       Logger.error(error);
       throw new InternalServerErrorException(errorMessage.USER.DELETION_FAILED);
     }
   }
-
 }

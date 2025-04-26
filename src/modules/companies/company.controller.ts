@@ -22,11 +22,13 @@ import { UpdateCompanyBodyDto } from './dtos/body/update-company.dto';
 import { BaseResponseMixin } from '@/common/dto/base-response.dto';
 import { GetCompaniesQueryDto } from './dtos/query/get-companies.dto';
 import { UserService } from '../users/user.service';
-import { In } from 'typeorm';
 
 @Controller({ path: 'companies' })
 export class CompanyController {
-  constructor(private companyService: CompanyService, private userService: UserService) {}
+  constructor(
+    private companyService: CompanyService,
+    private userService: UserService,
+  ) {}
 
   @Post('/')
   @HttpCode(HttpStatus.CREATED)
@@ -52,7 +54,7 @@ export class CompanyController {
     const options = {
       ...pageOptions,
       skip: query.skip,
-    }
+    };
     const companies = await this.companyService.listCompany({
       ...options,
       user,

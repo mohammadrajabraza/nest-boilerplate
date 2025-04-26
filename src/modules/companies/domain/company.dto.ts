@@ -1,5 +1,8 @@
 import { AbstractDto } from '@/common/dto/abstract.dto';
-import { ClassFieldOptional, StringFieldOptional } from '@/decorators/field.decorator';
+import {
+  ClassFieldOptional,
+  StringFieldOptional,
+} from '@/decorators/field.decorator';
 import type { CompanyEntity } from '../infrastructure/persistence/entities/company.entity';
 import { UserDto } from '@/modules/users/domain/user.dto';
 
@@ -26,7 +29,7 @@ export class CompanyDto extends AbstractDto {
   public status: string;
 
   @ClassFieldOptional(() => UserDto, { nullable: true, isArray: true })
-  public users?: UserDto[]
+  public users?: UserDto[];
 
   constructor(company: CompanyEntity) {
     super(company);
@@ -39,7 +42,7 @@ export class CompanyDto extends AbstractDto {
     this.status = company.status;
 
     if (company.users && company.users.length > 0) {
-      this.users = company.users.map(u => u.toDto());
-    } 
+      this.users = company.users.map((u) => u.toDto());
+    }
   }
 }

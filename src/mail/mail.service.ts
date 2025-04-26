@@ -106,13 +106,14 @@ export class MailService {
     let passwordText: MaybeType<string>;
 
     if (i18n) {
-      [emailConfirmTitle, text1, text2, text3] = await Promise.all([
-        i18n.t('common.confirmEmail'),
-        i18n.t('confirm-email.text1'),
-        i18n.t('confirm-email.text2'),
-        i18n.t('confirm-email.text3'),
-        i18n.t('confirm-email.passwordText'),
-      ]);
+      [emailConfirmTitle, text1, text2, text3, passwordText] =
+        await Promise.all([
+          i18n.t('common.confirmEmail'),
+          i18n.t('create-user.text1'),
+          i18n.t('create-user.text2'),
+          i18n.t('create-user.text3'),
+          i18n.t('create-user.passwordText'),
+        ]);
     }
 
     const url = new URL(
@@ -139,6 +140,7 @@ export class MailService {
         text1,
         text2,
         text3,
+        password_text: passwordText,
         password: mailData.data.password,
       },
     });

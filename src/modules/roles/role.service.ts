@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RoleEntity } from './infrastructure/persistence/entities/role.entity';
-import { FindOptions, FindOptionsWhere, Like, Repository } from 'typeorm';
+import { FindOptionsWhere, Like, Repository } from 'typeorm';
 import errorMessage from '@/constants/error-message';
 import toSafeAsync from '@/utils/to-safe-async';
 import { CreateRoleBodyDto } from './dtos/body/create-role.dto';

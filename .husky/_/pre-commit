@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
-. "$(dirname "$0")/h"
-npx commitlint --edit 
+set -e
+
 npx lint-staged

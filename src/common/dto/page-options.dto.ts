@@ -40,4 +40,4 @@ export type PageOptionsType = {
   take: number;
   skip: number;
   q?: string;
-}
+};

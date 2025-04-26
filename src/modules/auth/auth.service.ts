@@ -191,9 +191,12 @@ export class AuthService {
     if (isVerified) {
       throw new ForbiddenException(errorMessage.AUTH.EMAIL_ALREADY_VERIFIED);
     }
-    const userProfileSetting = await this.userService.updateUserProfileSetting(userId, {
-      isEmailVerified: true,
-    });
+    const userProfileSetting = await this.userService.updateUserProfileSetting(
+      userId,
+      {
+        isEmailVerified: true,
+      },
+    );
     return { user, userProfileSetting };
   }
 
@@ -229,7 +232,7 @@ export class AuthService {
     await this.userService.updateUser(user.id, { password });
     await this.userService.updateUserProfileSetting(user.id, {
       isPasswordReset: true,
-    })
+    });
   }
 
   async logout(session: SessionDto) {
