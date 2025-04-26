@@ -36,6 +36,9 @@ class EnvironmentVariablesValidator {
   VERIFY_EMAIL_SUCCESS_REDIRECT: string;
 
   @IsString()
+  VERIFY_EMAIL_PASSWORD_RESET_REDIRECT: string;
+
+  @IsString()
   VERIFY_EMAIL_ERROR_REDIRECT: string;
 }
 
@@ -82,6 +85,7 @@ export default registerAs<AuthConfig>('auth', () => {
       redirect: {
         success: config.VERIFY_EMAIL_SUCCESS_REDIRECT,
         error: config.VERIFY_EMAIL_ERROR_REDIRECT,
+        'password-reset': config.VERIFY_EMAIL_PASSWORD_RESET_REDIRECT,
       },
     },
     'password-reset': {

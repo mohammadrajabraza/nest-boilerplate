@@ -8,6 +8,8 @@ export enum AuthAuditLogEvent {
   FORGOT_PASSWORD_FAILURE = 'forgot_password_failure',
   RESET_PASSWORD_SUCCESS = 'reset_password_success',
   RESET_PASSWORD_FAILURE = 'reset_password_failure',
+  CHANGE_PASSWORD_SUCCESS = 'change_password_success',
+  CHANGE_PASSWORD_FAILURE = 'change_password_failure',
   ME_SUCCESS = 'me_success',
   ME_FAILURE = 'me_failure',
   REFRESH_SUCCESS = 'refresh_success',

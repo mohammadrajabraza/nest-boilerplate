@@ -22,16 +22,16 @@ class CompanyMapper {
     if (action === 'LIST' && data && Array.isArray(data)) {
       return new ListCompanyResponseDto(
         data.map((i) => i.toDto()),
-        successMessage.ROLE.LIST,
+        successMessage.COMPANY.LIST,
         HttpStatus.OK,
       );
     } else if (action === 'DELETE' && !data) {
       const DeleteResponse = BaseResponseMixin(class {});
-      return new DeleteResponse({}, successMessage.ROLE.DELETE, HttpStatus.OK);
+      return new DeleteResponse({}, successMessage.COMPANY.DELETE, HttpStatus.OK);
     } else if (data && !Array.isArray(data)) {
       const response = new CompanyResponseDto(
         data.toDto(),
-        successMessage.ROLE[action],
+        successMessage.COMPANY[action],
         action === 'CREATE' ? HttpStatus.CREATED : HttpStatus.OK,
       );
       return response;
@@ -41,10 +41,10 @@ class CompanyMapper {
 
   public static toPersistence(
     body: CreateCompanyBodyDto | UpdateCompanyBodyDto,
-    role: CompanyEntity | object = {},
+    company: CompanyEntity | object = {},
   ) {
     return plainToInstance(CompanyEntity, {
-      ...role,
+      ...company,
       ...body,
     });
   }

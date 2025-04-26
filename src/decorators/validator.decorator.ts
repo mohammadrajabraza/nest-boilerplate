@@ -3,6 +3,7 @@ import {
   IsPhoneNumber as isPhoneNumber,
   registerDecorator,
   ValidateIf,
+  ValidationArguments,
 } from 'class-validator';
 import _ from 'lodash';
 
@@ -63,4 +64,26 @@ export function IsUndefinable(options?: ValidationOptions): PropertyDecorator {
 
 export function IsNullable(options?: ValidationOptions): PropertyDecorator {
   return ValidateIf((_obj, value) => value !== null, options);
+}
+
+
+export function Match(property: string, validationOptions?: ValidationOptions) {
+    return (object: any, propertyName: string) => {
+        registerDecorator({
+            target: object.constructor,
+            propertyName,
+            options: validationOptions,
+            constraints: [property],
+            validator: {
+              validate(value: any, args: ValidationArguments) {
+                const [relatedPropertyName] = args.constraints;
+                const relatedValue = (args.object as any)[relatedPropertyName];
+                return value === relatedValue;
+            },
+              defaultMessage(): string {
+                return 'error.invalidMatch';
+              },
+            },
+        });
+    };
 }

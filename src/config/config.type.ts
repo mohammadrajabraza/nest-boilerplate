@@ -36,6 +36,7 @@ export type AuthConfig = {
     redirect: {
       success: string;
       error: string;
+      'password-reset': string
     };
   };
   algorithm: Algorithm;

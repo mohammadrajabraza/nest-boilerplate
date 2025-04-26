@@ -120,7 +120,7 @@ export class UserService {
     }
   }
 
-  async updateUserProfileSetting(id: Uuid, data: { isEmailVerified: boolean }) {
+  async updateUserProfileSetting(id: Uuid, data: Partial<{ isEmailVerified: boolean, isPasswordReset: boolean}>) {
     const setting = await this.findUserProfileSetting(id);
 
     try {

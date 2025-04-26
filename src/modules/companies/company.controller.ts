@@ -71,6 +71,7 @@ export class CompanyController {
     @Param('id') id: string,
     @Body() body: UpdateCompanyBodyDto,
   ) {
+    console.log(id);
     const company = await this.companyService.updateCompany(id, body);
     return CompanyMapper.toDomain(company, 'UPDATE');
   }

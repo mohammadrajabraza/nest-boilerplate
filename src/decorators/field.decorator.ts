@@ -16,6 +16,7 @@ import {
   IsString,
   IsUrl,
   IsUUID,
+  Matches,
   Max,
   MaxLength,
   Min,
@@ -40,6 +41,7 @@ import {
   IsPhoneNumber,
   IsTmpKey as IsTemporaryKey,
   IsUndefinable,
+  Match,
 } from './validator.decorator';
 
 // type RequireField<T, K extends keyof T> = T & Required<Pick<T, K>>;
@@ -173,7 +175,7 @@ export function StringFieldOptional(
 
 export function PasswordField(
   options: Omit<ApiPropertyOptions, 'type' | 'minLength'> &
-    IStringFieldOptions = {},
+    IStringFieldOptions & { match?: string } = {},
 ): PropertyDecorator {
   const decorators = [StringField({ ...options, minLength: 6 }), IsPassword()];
 
@@ -181,6 +183,10 @@ export function PasswordField(
     decorators.push(IsNullable());
   } else {
     decorators.push(NotEquals(null));
+  }
+
+  if (options.match) {
+    decorators.push(Match(options.match))
   }
 
   return applyDecorators(...decorators);

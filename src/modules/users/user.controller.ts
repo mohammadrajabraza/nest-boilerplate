@@ -28,6 +28,7 @@ import { GeneratorService } from '@/shared/services/generator.service';
 import { JwtService } from '@nestjs/jwt';
 import { UpdateUserBodyDto } from './dtos/body/update-user.dto';
 import { BaseResponseMixin } from '@/common/dto/base-response.dto';
+import errorMessage from '@/constants/error-message';
 
 @Controller({ path: 'users', version: '1' })
 export class UserController {
@@ -80,7 +81,7 @@ export class UserController {
     });
 
     if (!user) {
-      throw new InternalServerErrorException('Failed to create user payload');
+      throw new InternalServerErrorException(errorMessage.USER.CREATION_FAILED);
     }
 
     const token = await this.tokenService.signConfirmEmailToken({

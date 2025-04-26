@@ -60,6 +60,8 @@ import { EmailSignupResponseDto } from './dtos/response/email-signup.dto';
 import { BaseResponseMixin } from '@/common/dto/base-response.dto';
 import { RefreshTokenResponseDto } from './dtos/response/refresh-token.dto';
 import { UserDto } from '../users/domain/user.dto';
+import { ChangePasswordResponseDto } from './dtos/response/change-password.dto';
+import { ChangePasswordBodyDto } from './dtos/body/change-password.dto';
 
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
@@ -139,7 +141,11 @@ export class AuthController {
       const payload = await this.tokenService.verifyConfirmEmailToken(
         query.token,
       );
-      await this.authService.verifyEmail(payload.userId);
+
+      const { userProfileSetting } = await this.authService.verifyEmail(payload.userId);
+      if (!userProfileSetting.isPasswordReset) {
+        return { url : redirect['password-reset'] }
+      }
       return { url: redirect.success };
     } catch (error) {
       Logger.error(error);
@@ -260,6 +266,29 @@ export class AuthController {
     );
   }
 
+  @Post('/password/change')
+  @HttpCode(HttpStatus.OK)
+  @UseAuthAuditInterceptor({
+    success: AuthAuditLogEvent.CHANGE_PASSWORD_SUCCESS,
+    error: AuthAuditLogEvent.CHANGE_PASSWORD_FAILURE,
+  })
+  @ApiOkResponse({
+    type: ChangePasswordResponseDto,
+  })
+  @ApiBearerAuth()
+  @ApiBody({ type: ChangePasswordBodyDto })
+  async changePassword(
+    @Body() body: ChangePasswordBodyDto,
+    @CurrentUser() user: UserDto
+  ) {
+    await this.authService.resetPassword(user.id, body.password);
+    return new ChangePasswordResponseDto(
+      {},
+      successMessage.AUTH.CHANGE_PASSWORD,
+      HttpStatus.OK,
+    );
+  }
+
   @Get('/me')
   @Roles(RoleType.USER, RoleType.ADMIN)
   @UseAuthAuditInterceptor({
@@ -361,7 +390,7 @@ export class AuthController {
           userId: user.id,
           role: isRole(user.userRoles[0].role.name),
         },
-        { deviceToken: null, timeZone: null },
+        { deviceToken: undefined, timeZone: undefined },
       );
       const url = new URL(redirectConfig.success);
       url.searchParams.set('access', encodeURIComponent(tokens.access.token));

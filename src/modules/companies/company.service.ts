@@ -97,7 +97,8 @@ export class CompanyService {
 
     try {
       const companyEntity = CompanyMapper.toPersistence(data, company);
-      return await this.companyRepository.save(companyEntity);
+      await this.companyRepository.save(companyEntity);
+      return await this.getCompanyById(company.id);
     } catch (error) {
       Logger.error(`Error in companyService.updateCompany ${error.message}`);
       if (error instanceof HttpException) throw error;

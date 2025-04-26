@@ -186,14 +186,15 @@ export class AuthService {
   }
 
   async verifyEmail(userId: Uuid) {
-    await this.userService.findOne({ id: userId });
+    const user = await this.userService.findOne({ id: userId });
     const isVerified = await this.userService.checkIsEmailVerified(userId);
     if (isVerified) {
       throw new ForbiddenException(errorMessage.AUTH.EMAIL_ALREADY_VERIFIED);
     }
-    await this.userService.updateUserProfileSetting(userId, {
+    const userProfileSetting = await this.userService.updateUserProfileSetting(userId, {
       isEmailVerified: true,
     });
+    return { user, userProfileSetting };
   }
 
   async resendEmail(email: string) {
@@ -226,6 +227,9 @@ export class AuthService {
     const user = await this.userService.findOne({ id: userId });
 
     await this.userService.updateUser(user.id, { password });
+    await this.userService.updateUserProfileSetting(user.id, {
+      isPasswordReset: true,
+    })
   }
 
   async logout(session: SessionDto) {
