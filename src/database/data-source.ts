@@ -2,6 +2,8 @@ import { SnakeNamingStrategy } from '@/utils/snake-naming';
 import 'reflect-metadata';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
+console.log(process.env);
+
 export const AppDataSource = new DataSource({
   type: process.env.DATABASE_TYPE,
   url: process.env.DATABASE_URL,

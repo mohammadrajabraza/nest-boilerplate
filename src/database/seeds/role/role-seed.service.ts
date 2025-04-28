@@ -22,7 +22,7 @@ export class RoleSeedService {
   private async saveRole(data: (typeof this.roles)[number]) {
     try {
       const roleExists = await this.repository.findOne({
-        where: { name: data.description },
+        where: { name: data.name },
       });
       if (roleExists) {
         return await this.repository.save(

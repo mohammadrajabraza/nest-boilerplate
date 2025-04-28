@@ -17,11 +17,11 @@ declare global {
       languageCode: LanguageCode,
     ): string;
 
-    toPageDto<Dto extends AbstractDto>(
+    toPageDto(
       this: T[],
       pageMetaDto: PageMetaDto,
       // FIXME make option type visible from entity
       options?: unknown,
-    ): PageDto<Dto>;
+    ): PageDto;
   }
 }

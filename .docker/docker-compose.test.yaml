@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:17.4-alpine
+    expose:
+      - 5432
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    volumes:
+      - ../scripts/wait-for-it.sh:/opt/wait-for-it.sh
+
+  maildev:
+    build:
+      context: .
+      dockerfile: maildev.Dockerfile
+    expose:
+      - 1080
+      - 1025
+    volumes:
+      - ../scripts/wait-for-it.sh:/opt/wait-for-it.sh
+
+  api:
+    build:
+      context: ../
+      dockerfile: .docker/test.Dockerfile
+    env_file:
+      - env-example
+    ports:
+      - '3000:3000'
+    volumes:
+      - ../src:/usr/src/app/src
+      - ../test:/usr/src/app/test
+    deploy:
+      resources:
+        limits:
+          memory: 2g # Set the maximum memory limit to 2GB
+        reservations:
+          memory: 1g # Reserve 1GB of memory
