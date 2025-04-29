@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { AbstractEntity } from '@/common/abstract.entity';
 import { CompanyDto } from '@/modules/companies/domain/company.dto';
 import { UseDto } from '@/decorators/use-dto.decorator';
@@ -30,4 +30,16 @@ export class CompanyEntity extends AbstractEntity<CompanyDto> {
 
   @OneToMany(() => UserEntity, (user) => user.company)
   users: UserEntity[];
+
+  @JoinColumn({ name: 'created_by', referencedColumnName: 'id' })
+  @ManyToOne(() => UserEntity, (user) => user.companyCreators)
+  creator: UserEntity | null;
+
+  @JoinColumn({ name: 'updated_by', referencedColumnName: 'id' })
+  @ManyToOne(() => UserEntity, (user) => user.companyUpdators)
+  updator: UserEntity | null;
+
+  @JoinColumn({ name: 'deleted_by', referencedColumnName: 'id' })
+  @ManyToOne(() => UserEntity, (user) => user.companyDeletors)
+  deletor: UserEntity | null;
 }

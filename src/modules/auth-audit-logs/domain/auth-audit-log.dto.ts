@@ -1,13 +1,23 @@
-import { AbstractDto } from '@/common/dto/abstract.dto';
+import { Uuid } from '@/types';
 import {
   DateField,
   EnumFieldOptional,
   StringFieldOptional,
+  UUIDField,
 } from '@/decorators/field.decorator';
 import { AuthAuditLogEvent } from '@/constants/auth-audit-log-event';
 import { AuthAuditLogEntity } from '../infrastructure/entities/auth-audit-log.entity';
 
-export class AuthAuditLogDto extends AbstractDto {
+export class AuthAuditLogDto {
+  @UUIDField()
+  id!: Uuid;
+
+  @DateField()
+  createdAt!: Date;
+
+  @DateField()
+  updatedAt!: Date;
+
   @EnumFieldOptional(() => AuthAuditLogEvent, { nullable: false })
   eventType: string;
 
@@ -30,8 +40,9 @@ export class AuthAuditLogDto extends AbstractDto {
   eventTimestamp: Date;
 
   constructor(authAuditLog: AuthAuditLogEntity) {
-    super(authAuditLog);
-
+    this.id = authAuditLog.id;
+    this.createdAt = authAuditLog.createdAt;
+    this.updatedAt = authAuditLog.updatedAt;
     this.eventType = authAuditLog.eventType as AuthAuditLogEvent;
     this.userId = authAuditLog.userId;
     this.deviceInfo = authAuditLog.deviceInfo;

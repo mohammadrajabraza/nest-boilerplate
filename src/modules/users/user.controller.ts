@@ -29,6 +29,8 @@ import { UpdateUserBodyDto } from './dtos/body/update-user.dto';
 import { BaseResponseMixin } from '@/common/dto/base-response.dto';
 import errorMessage from '@/constants/error-message';
 import { GetUsersQueryDto } from './dtos/query/get-users.dto';
+import { CurrentUser } from '@/decorators/current-user.decorator';
+import { UserDto } from './domain/user.dto';
 
 @Controller({ path: 'users', version: '1' })
 export class UserController {
@@ -75,16 +77,22 @@ export class UserController {
     status: HttpStatus.CREATED,
   })
   @ApiBearerAuth()
-  async createUser(@Body() body: CreateUserBodyDto) {
+  async createUser(
+    @Body() body: CreateUserBodyDto,
+    @CurrentUser() admin: UserDto,
+  ) {
     const password = this.generetorService.generateRandomPassword();
     await this.userService.checkUserByEmail(body.email);
 
-    const user = await this.userService.create({
-      ...body,
-      provider: AuthProviders.EMAIL,
-      password: password,
-      isPasswordReset: false,
-    });
+    const user = await this.userService.create(
+      {
+        ...body,
+        provider: AuthProviders.EMAIL,
+        password: password,
+        isPasswordReset: false,
+      },
+      admin.id,
+    );
 
     if (!user) {
       throw new InternalServerErrorException(errorMessage.USER.CREATION_FAILED);
@@ -132,10 +140,15 @@ export class UserController {
     type: UpdateUserBodyDto,
   })
   @ApiBearerAuth()
-  async updateUser(@Param('id') id: string, @Body() body: UpdateUserBodyDto) {
+  async updateUser(
+    @Param('id') id: string,
+    @Body() body: UpdateUserBodyDto,
+    @CurrentUser() admin: UserDto,
+  ) {
     const user = await this.userService.updateUserWithRoleAndProfile(
       id as Uuid,
       body,
+      admin.id,
     );
     return UserMapper.toDomain(user, 'UPDATE');
   }
@@ -148,8 +161,11 @@ export class UserController {
     status: HttpStatus.OK,
   })
   @ApiBearerAuth()
-  async deleteUser(@Param('id') id: string) {
-    await this.userService.deleteUser(id as Uuid);
+  async deleteUser(
+    @Param('id') id: string,
+    @CurrentUser() CurrentUser: UserDto,
+  ) {
+    await this.userService.deleteUser(id as Uuid, CurrentUser.id);
     return UserMapper.toDomain(null, 'DELETE');
   }
 }

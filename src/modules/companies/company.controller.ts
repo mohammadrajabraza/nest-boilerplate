@@ -22,6 +22,8 @@ import { UpdateCompanyBodyDto } from './dtos/body/update-company.dto';
 import { BaseResponseMixin } from '@/common/dto/base-response.dto';
 import { GetCompaniesQueryDto } from './dtos/query/get-companies.dto';
 import { UserService } from '../users/user.service';
+import { CurrentUser } from '@/decorators/current-user.decorator';
+import { UserDto } from '../users/domain/user.dto';
 
 @Controller({ path: 'companies' })
 export class CompanyController {
@@ -37,8 +39,11 @@ export class CompanyController {
     type: CompanyResponseDto,
   })
   @ApiBearerAuth()
-  async createCompany(@Body() body: CreateCompanyBodyDto) {
-    const company = await this.companyService.createCompany(body);
+  async createCompany(
+    @Body() body: CreateCompanyBodyDto,
+    @CurrentUser() admin: UserDto,
+  ) {
+    const company = await this.companyService.createCompany(body, admin.id);
     return CompanyMapper.toDomain(company, 'CREATE');
   }
 
@@ -85,9 +90,10 @@ export class CompanyController {
   async updateRole(
     @Param('id') id: string,
     @Body() body: UpdateCompanyBodyDto,
+    @CurrentUser() admin: UserDto,
   ) {
     console.log(id);
-    const company = await this.companyService.updateCompany(id, body);
+    const company = await this.companyService.updateCompany(id, body, admin.id);
     return CompanyMapper.toDomain(company, 'UPDATE');
   }
 
@@ -98,8 +104,8 @@ export class CompanyController {
     type: BaseResponseMixin(class {}),
   })
   @ApiBearerAuth()
-  async deleteRole(@Param('id') id: string) {
-    await this.companyService.deleteCompany(id);
+  async deleteRole(@Param('id') id: string, @CurrentUser() admin: UserDto) {
+    await this.companyService.deleteCompany(id, admin.id);
     return CompanyMapper.toDomain(null, 'DELETE');
   }
 }

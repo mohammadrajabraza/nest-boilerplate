@@ -15,7 +15,6 @@ import {
 } from 'nestjs-i18n';
 import { ClsModule, ClsMiddleware } from 'nestjs-cls';
 import path from 'path';
-import { TestController } from './test/test.controller';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/users/user.module';
@@ -85,7 +84,7 @@ import { CompanyModule } from './modules/companies/company.module';
     TokenModule,
     ImageModule,
   ],
-  controllers: [AppController, TestController],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {

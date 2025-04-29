@@ -45,6 +45,7 @@ export class AuthService {
       throw new UnauthorizedException(errorMessage.AUTH.INVALID_CREDENTIALS);
     }
     const user = result.data;
+
     if (
       !user.authProviders.includes(AuthProviders.EMAIL) ||
       user.password === 'invalid'
@@ -58,6 +59,8 @@ export class AuthService {
       data.password,
       user.password,
     );
+
+    console.log(isPasswordMatch);
 
     if (!isPasswordMatch) {
       throw new UnauthorizedException(errorMessage.AUTH.INVALID_CREDENTIALS);
@@ -94,6 +97,7 @@ export class AuthService {
           loginAt: new Date(),
           isLoggedIn: true,
           userId: payload.userId,
+          createdBy: payload.userId,
         }),
       );
 
@@ -143,6 +147,7 @@ export class AuthService {
         {
           accessToken: access.token,
           refreshToken: refresh.token,
+          updatedBy: payload.userId,
           ...body,
         },
       );
@@ -229,7 +234,7 @@ export class AuthService {
   async resetPassword(userId: Uuid, password: string) {
     const user = await this.userService.findOne({ id: userId });
 
-    await this.userService.updateUser(user.id, { password });
+    await this.userService.updateUser(user.id, { password, updatedBy: userId });
     await this.userService.updateUserProfileSetting(user.id, {
       isPasswordReset: true,
     });
@@ -252,6 +257,7 @@ export class AuthService {
         {
           isLoggedIn: false,
           logoutAt: new Date(),
+          updatedBy: session.userId,
         },
       );
     } catch (error) {
@@ -295,6 +301,7 @@ export class AuthService {
       ),
       googleId: data.providerId.toString(),
       profilePicture: data.picture,
+      updatedBy: result.data.id,
     });
 
     return await this.userService.findOne({ id: result.data.id });

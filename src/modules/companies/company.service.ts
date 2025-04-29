@@ -51,10 +51,10 @@ export class CompanyService {
     }
   }
 
-  async createCompany(data: CreateCompanyBodyDto) {
+  async createCompany(data: CreateCompanyBodyDto, createdBy: Uuid) {
     try {
       const company = await this.companyRepository.save(
-        CompanyMapper.toPersistence(data),
+        CompanyMapper.toPersistence(data, { createdBy }),
       );
       return company;
     } catch (error) {
@@ -128,7 +128,7 @@ export class CompanyService {
     }
   }
 
-  async updateCompany(id: string, data: UpdateCompanyBodyDto) {
+  async updateCompany(id: string, data: UpdateCompanyBodyDto, updatedBy: Uuid) {
     const company = await this.getCompanyById(id as Uuid);
 
     if (data.name) {
@@ -139,7 +139,10 @@ export class CompanyService {
     }
 
     try {
-      const companyEntity = CompanyMapper.toPersistence(data, company);
+      const companyEntity = CompanyMapper.toPersistence(data, {
+        ...company,
+        updatedBy,
+      });
       await this.companyRepository.save(companyEntity);
       return await this.getCompanyById(company.id);
     } catch (error) {
@@ -151,7 +154,7 @@ export class CompanyService {
     }
   }
 
-  async deleteCompany(id: string) {
+  async deleteCompany(id: string, deletedBy: Uuid) {
     const company = await this.getCompanyById(id as Uuid);
 
     try {
@@ -159,7 +162,13 @@ export class CompanyService {
         { companyId: company.id },
         { companyId: null },
       );
-      await this.companyRepository.delete({ id: company.id });
+      await this.companyRepository.update(
+        { id: company.id },
+        {
+          deletedAt: new Date(),
+          deletedBy: deletedBy,
+        },
+      );
     } catch (error) {
       Logger.error(`Error in companyService.deleteCompany ${error.message}`);
       if (error instanceof HttpException) throw error;

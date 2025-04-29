@@ -1,14 +1,23 @@
-import { AbstractDto } from '@/common/dto/abstract.dto';
 import {
   BooleanField,
   DateField,
   EnumField,
   StringField,
+  UUIDField,
 } from '@/decorators/field.decorator';
 import type { TokenEntity } from '../infrastructure/persistence/entities/token.entity';
 import { TokenType } from '@/constants/token-type';
 
-export class TokenDto extends AbstractDto {
+export class TokenDto {
+  @UUIDField()
+  id!: Uuid;
+
+  @DateField()
+  createdAt!: Date;
+
+  @DateField()
+  updatedAt!: Date;
+
   @StringField()
   token: string;
 
@@ -26,8 +35,6 @@ export class TokenDto extends AbstractDto {
   isRevoked: boolean;
 
   constructor(token: TokenEntity) {
-    super(token);
-
     const tokenType = [
       TokenType.ACCESS,
       TokenType.REFRESH,
@@ -39,6 +46,9 @@ export class TokenDto extends AbstractDto {
       throw new Error('Invalid token type');
     }
 
+    this.id = token.id;
+    this.createdAt = token.createdAt;
+    this.updatedAt = token.updatedAt;
     this.token = token.token;
     this.tokenType = tokenType;
     this.issuedAt = new Date(token.issuedAt);

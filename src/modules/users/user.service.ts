@@ -38,10 +38,13 @@ type CreateUserData = {
 export class UserService {
   constructor(
     private roleService: RoleService,
+
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
+
     @InjectRepository(UserRoleEntity)
     private userRoleRepository: Repository<UserRoleEntity>,
+
     @InjectRepository(ProfileSettingEntity)
     private profileSettingRepository: Repository<ProfileSettingEntity>,
   ) {}
@@ -151,7 +154,7 @@ export class UserService {
     }
   }
 
-  async create(data: CreateUserData) {
+  async create(data: CreateUserData, createdBy: Uuid | null = null) {
     const role = await this.roleService.getRoleByName(data.role);
     try {
       const userEntity = new UserEntity();
@@ -160,9 +163,12 @@ export class UserService {
       userEntity.email = data.email;
       userEntity.phone = data.phone;
       userEntity.password = data.password;
-
       if (data.companyId) {
         userEntity.companyId = data.companyId;
+      }
+
+      if (data.provider) {
+        userEntity.authProviders = [data.provider];
       }
 
       if (data.provider === 'google') {
@@ -176,9 +182,12 @@ export class UserService {
 
       const user = await this.userRepository.save(userEntity);
 
+      const creator = createdBy !== null ? createdBy : user.id;
+
       const userRoleEntity = new UserRoleEntity();
       userRoleEntity.userId = user.id;
       userRoleEntity.roleId = role.id;
+      userRoleEntity.createdBy = creator;
 
       const profileSettingEntity = new ProfileSettingEntity();
       profileSettingEntity.isEmailVerified = false;
@@ -188,8 +197,10 @@ export class UserService {
           ? true
           : data.isPasswordReset;
       profileSettingEntity.userId = user.id;
+      profileSettingEntity.createdBy = creator;
 
       await Promise.all([
+        this.userRepository.update(user.id, { createdBy: creator }),
         this.userRoleRepository.save(userRoleEntity),
         this.profileSettingRepository.save(profileSettingEntity),
       ]);
@@ -275,6 +286,8 @@ export class UserService {
       authProviders?: string[];
       googleId?: string;
       profilePicture?: string;
+      createdBy?: Uuid;
+      updatedBy?: Uuid;
     },
   ) {
     try {
@@ -285,20 +298,35 @@ export class UserService {
     }
   }
 
-  async updateUserWithRoleAndProfile(userId: Uuid, data: UpdateUserBodyDto) {
+  async updateUserWithRoleAndProfile(
+    userId: Uuid,
+    data: UpdateUserBodyDto,
+    updatedBy: Uuid,
+  ) {
     const existingUser = await this.findOne({ id: userId });
 
-    const isEmailChanged = existingUser.email !== data.email;
+    const isEmailChanged = data.email && existingUser.email !== data.email;
 
-    const updatedUser = await this.userRepository.save({
-      ...existingUser,
+    if (isEmailChanged) {
+      const userFoundWithEmail = await toSafeAsync(
+        this.findOne({ email: data.email }),
+      );
+      if (userFoundWithEmail.success) {
+        throw new BadRequestException('Email is already in use');
+      }
+    }
+
+    await this.userRepository.update(userId, {
       firstName: data.firstName,
       lastName: data.lastName,
       email: data.email,
       phone: data.phone,
       companyId: data.companyId,
-      password: data.password, // hash it if needed here
+      password: data.password || undefined,
+      updatedBy: updatedBy,
     });
+
+    const updatedUser = await this.findOne({ id: userId });
 
     // Update role if changed
     const roleEntity = await this.roleService.getRoleByName(data.role);
@@ -311,22 +339,33 @@ export class UserService {
     const profile = await this.findUserProfileSetting(updatedUser.id);
     if (isEmailChanged) {
       profile.isEmailVerified = false;
+      profile.updatedBy = updatedBy;
     }
     await this.profileSettingRepository.save(profile);
 
     return this.findOne({ id: updatedUser.id });
   }
 
-  async deleteUser(userId: Uuid): Promise<void> {
+  async deleteUser(userId: Uuid, deletedBy: Uuid): Promise<void> {
     const user = await this.findOne({ id: userId });
     if (!user) {
       throw new NotFoundException(errorMessage.USER.NOT_FOUND);
     }
 
     try {
-      await this.profileSettingRepository.delete({ userId });
-      await this.userRoleRepository.delete({ userId });
-      await this.userRepository.delete({ id: userId });
+      // Set deletedBy before soft deleting each entity
+      await this.profileSettingRepository.update(
+        { userId },
+        { deletedBy, deletedAt: new Date() },
+      );
+      await this.userRoleRepository.update(
+        { userId },
+        { deletedBy, deletedAt: new Date() },
+      );
+      await this.userRepository.update(
+        { id: userId },
+        { deletedBy, deletedAt: new Date() },
+      );
     } catch (error) {
       Logger.error(error);
       throw new InternalServerErrorException(errorMessage.USER.DELETION_FAILED);

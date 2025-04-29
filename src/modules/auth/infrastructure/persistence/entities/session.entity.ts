@@ -49,4 +49,16 @@ export class SessionEntity extends AbstractEntity<SessionDto> {
   })
   @ManyToOne(() => UserEntity, (user) => user.sessions)
   user: UserEntity;
+
+  @JoinColumn({ name: 'created_by', referencedColumnName: 'id' })
+  @ManyToOne(() => UserEntity, (user) => user.sessionCreators)
+  creator: UserEntity | null;
+
+  @JoinColumn({ name: 'updated_by', referencedColumnName: 'id' })
+  @ManyToOne(() => UserEntity, (user) => user.sessionUpdators)
+  updator: UserEntity | null;
+
+  @JoinColumn({ name: 'deleted_by', referencedColumnName: 'id' })
+  @ManyToOne(() => UserEntity, (user) => user.sessionDeletors)
+  deletor: UserEntity | null;
 }

@@ -1,5 +1,6 @@
 import { SnakeNamingStrategy } from '@/utils/snake-naming';
 import 'reflect-metadata';
+import '../polyfill';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
 console.log(process.env);

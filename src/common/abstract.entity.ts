@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -36,6 +37,21 @@ export abstract class AbstractEntity<
     onUpdate: 'CURRENT_TIMESTAMP', // Update to current timestamp
   })
   updatedAt!: Date;
+
+  @DeleteDateColumn({
+    type: 'timestamptz',
+    nullable: true,
+  })
+  deletedAt!: Date;
+
+  @Column({ type: 'uuid', nullable: true, default: null })
+  createdBy?: Uuid | null;
+
+  @Column({ type: 'uuid', nullable: true, default: null })
+  updatedBy?: Uuid | null;
+
+  @Column({ type: 'uuid', nullable: true, default: null })
+  deletedBy?: Uuid | null;
 
   translations?: AbstractTranslationEntity[];
 

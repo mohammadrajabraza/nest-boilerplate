@@ -26,4 +26,16 @@ export class UserRoleEntity extends AbstractEntity {
   })
   @ManyToOne(() => UserEntity, (user) => user.userRoles)
   user: UserEntity;
+
+  @JoinColumn({ name: 'created_by', referencedColumnName: 'id' })
+  @ManyToOne(() => UserEntity, (user) => user.userRoleCreators)
+  creator: UserEntity | null;
+
+  @JoinColumn({ name: 'updated_by', referencedColumnName: 'id' })
+  @ManyToOne(() => UserEntity, (user) => user.userRoleUpdators)
+  updator: UserEntity | null;
+
+  @JoinColumn({ name: 'deleted_by', referencedColumnName: 'id' })
+  @ManyToOne(() => UserEntity, (user) => user.userRoleDeletors)
+  deletor: UserEntity | null;
 }

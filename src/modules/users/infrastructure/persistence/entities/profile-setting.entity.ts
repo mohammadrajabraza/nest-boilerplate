@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { AbstractEntity } from '@/common/abstract.entity';
 import { UserEntity } from './user.entity';
 
@@ -23,4 +23,16 @@ export class ProfileSettingEntity extends AbstractEntity {
   })
   @OneToOne(() => UserEntity, (user) => user.profileSetting)
   user: UserEntity;
+
+  @JoinColumn({ name: 'created_by', referencedColumnName: 'id' })
+  @ManyToOne(() => UserEntity, (user) => user.profileSettingCreators)
+  creator: UserEntity | null;
+
+  @JoinColumn({ name: 'updated_by', referencedColumnName: 'id' })
+  @ManyToOne(() => UserEntity, (user) => user.profileSettingUpdators)
+  updator: UserEntity | null;
+
+  @JoinColumn({ name: 'deleted_by', referencedColumnName: 'id' })
+  @ManyToOne(() => UserEntity, (user) => user.profileSettingDeletors)
+  deletor: UserEntity | null;
 }

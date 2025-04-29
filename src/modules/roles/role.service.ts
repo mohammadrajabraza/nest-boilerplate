@@ -27,16 +27,22 @@ export class RoleService {
     private userRoleRepository: Repository<UserRoleEntity>,
   ) {}
 
-  async createRole(body: CreateRoleBodyDto) {
+  async createRole(body: CreateRoleBodyDto, createdBy: Uuid) {
     try {
       const result = await toSafeAsync(this.getRoleByName(body.name));
       if (result.success) {
         throw new BadRequestException(errorMessage.ROLE.ALREADY_EXISTS);
       }
-      const role = await this.roleRepository.save(
-        CreateRoleMapper.toPersistence(body),
-      );
-      return role;
+      const roleData = CreateRoleMapper.toPersistence(body, {
+        createdBy,
+      });
+
+      const savedRole = await this.roleRepository.save(roleData);
+
+      // Fix here: force class prototype onto plain object
+      Object.setPrototypeOf(savedRole, RoleEntity.prototype);
+
+      return savedRole;
     } catch (error) {
       Logger.error(error);
       if (error instanceof HttpException) {
@@ -52,9 +58,12 @@ export class RoleService {
       if (options?.q && typeof options.q === 'string') {
         where.name = Like(options.q);
       }
+      const skip = Number(options?.skip) || 0;
+      const take = Number(options?.take) || 10;
+
       return await this.roleRepository.find({
-        skip: options?.skip,
-        take: options?.take,
+        skip,
+        take,
         where,
       });
     } catch (error) {
@@ -98,18 +107,28 @@ export class RoleService {
     }
   }
 
-  async deleteRole(id: string) {
+  async deleteRole(id: string, deletedBy: Uuid): Promise<void> {
     const role = await this.getRoleById(id as Uuid);
+    if (!role) {
+      throw new NotFoundException(errorMessage.ROLE.NOT_FOUND);
+    }
+
     try {
-      await this.userRoleRepository.delete({ roleId: role.id });
-      await this.roleRepository.delete({ id: role.id });
+      await this.userRoleRepository.update(
+        { roleId: role.id },
+        { deletedBy, deletedAt: new Date() },
+      );
+      await this.roleRepository.update(
+        { id: role.id },
+        { deletedBy, deletedAt: new Date() },
+      );
     } catch (error) {
       Logger.error(error);
       throw new InternalServerErrorException(errorMessage.ROLE.DELETION_FAILED);
     }
   }
 
-  async updateRole(id: string, data: UpdateRoleBodyDto) {
+  async updateRole(id: string, data: UpdateRoleBodyDto, updatedBy: Uuid) {
     const role = await this.getRoleById(id as Uuid);
     try {
       const updatedRole = await this.roleRepository.save(
@@ -118,13 +137,13 @@ export class RoleService {
             name: data.name || undefined,
             description: data.description || undefined,
           },
-          role,
+          { ...role, updatedBy },
         ),
       );
       return updatedRole;
     } catch (error) {
       Logger.error(error);
-      throw new InternalServerErrorException(errorMessage.ROLE.DELETION_FAILED);
+      throw new InternalServerErrorException(errorMessage.ROLE.UPDATION_FAILED);
     }
   }
 }

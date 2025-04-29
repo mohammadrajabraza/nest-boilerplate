@@ -21,6 +21,8 @@ import { RoleResponseDto } from './dtos/response/role.dto';
 import { ListRoleResponseDto } from './dtos/response/list-role.dto';
 import { BaseResponseMixin } from '@/common/dto/base-response.dto';
 import { GetRolesQueryDto } from './dtos/query/get-roles.dto';
+import { CurrentUser } from '@/decorators/current-user.decorator';
+import { UserDto } from '../users/domain/user.dto';
 
 @Controller({ path: 'roles', version: '1' })
 export class RoleController {
@@ -34,8 +36,11 @@ export class RoleController {
     status: HttpStatus.CREATED,
   })
   @ApiBearerAuth()
-  async createRole(@Body() body: CreateRoleBodyDto) {
-    const role = await this.roleService.createRole(body);
+  async createRole(
+    @Body() body: CreateRoleBodyDto,
+    @CurrentUser() CurrentUser: UserDto,
+  ) {
+    const role = await this.roleService.createRole(body, CurrentUser.id);
     return RoleMapper.toDomain(role, 'CREATE');
   }
 
@@ -74,8 +79,12 @@ export class RoleController {
     status: HttpStatus.OK,
   })
   @ApiBearerAuth()
-  async updateRole(@Param('id') id: string, @Body() body: UpdateRoleBodyDto) {
-    const role = await this.roleService.updateRole(id, body);
+  async updateRole(
+    @Param('id') id: string,
+    @Body() body: UpdateRoleBodyDto,
+    @CurrentUser() admin: UserDto,
+  ) {
+    const role = await this.roleService.updateRole(id, body, admin.id);
     return RoleMapper.toDomain(role, 'UPDATE');
   }
 
@@ -87,8 +96,8 @@ export class RoleController {
     status: HttpStatus.OK,
   })
   @ApiBearerAuth()
-  async deleteRole(@Param('id') id: string) {
-    await this.roleService.deleteRole(id);
+  async deleteRole(@Param('id') id: string, @CurrentUser() admin: UserDto) {
+    await this.roleService.deleteRole(id, admin.id);
     return RoleMapper.toDomain(null, 'DELETE');
   }
 }
