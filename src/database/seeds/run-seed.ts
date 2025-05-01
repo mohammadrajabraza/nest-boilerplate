@@ -1,3 +1,4 @@
+import '../../polyfill';
 import { NestFactory } from '@nestjs/core';
 import { RoleSeedService } from './role/role-seed.service';
 import { SeedModule } from './seed.module';
