@@ -18,7 +18,4 @@ export class CreateCompanyBodyDto {
 
   @StringField({ swagger: true })
   public industry: string;
-
-  @StringField({ swagger: true })
-  public status: string;
 }

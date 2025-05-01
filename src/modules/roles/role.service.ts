@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RoleEntity } from './infrastructure/persistence/entities/role.entity';
-import { FindOptionsWhere, Like, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import errorMessage from '@/constants/error-message';
 import toSafeAsync from '@/utils/to-safe-async';
 import { CreateRoleBodyDto } from './dtos/body/create-role.dto';
@@ -17,6 +17,7 @@ import RoleMapper from './infrastructure/persistence/mapper/role.mapper';
 import { UpdateRoleBodyDto } from './dtos/body/update-role.dto';
 import { UserRoleEntity } from './infrastructure/persistence/entities/user-role.entity';
 import { PageOptionsType } from '@/common/dto/page-options.dto';
+import { GetRolesQueryDto } from './dtos/query/get-roles.dto';
 
 @Injectable()
 export class RoleService {
@@ -51,26 +52,49 @@ export class RoleService {
       throw new InternalServerErrorException(errorMessage.ROLE.CREATION_FAILED);
     }
   }
-
-  async listRoles(options?: PageOptionsType) {
+  async listRoles(options?: GetRolesQueryDto) {
     try {
-      const where: FindOptionsWhere<RoleEntity> = {};
-      if (options?.q && typeof options.q === 'string') {
-        where.name = Like(options.q);
-      }
-      const skip = Number(options?.skip) || 0;
-      const take = Number(options?.take) || 10;
+      const query = this.roleRepository.createQueryBuilder('role');
 
-      return await this.roleRepository.find({
-        skip,
-        take,
-        where,
-      });
+      if (options?.q && typeof options.q === 'string') {
+        query.where('role.name LIKE :q', { q: `%${options.q}%` });
+      }
+
+      if (typeof options?.skip === 'number') {
+        query.skip(options.skip);
+      }
+
+      if (typeof options?.take === 'number') {
+        query.take(options.take);
+      }
+
+      if (options?.sort && options?.order) {
+        query.orderBy(
+          `role.${options.sort}`,
+          options.order.toUpperCase() as 'ASC' | 'DESC',
+        );
+      }
+
+      return await query.getMany();
     } catch (error) {
       Logger.error(error);
-      if (error instanceof HttpException) {
-        throw error;
+      if (error instanceof HttpException) throw error;
+      throw new InternalServerErrorException(errorMessage.ROLE.LIST_FAILED);
+    }
+  }
+
+  async countRole(options?: Pick<PageOptionsType, 'q'>) {
+    try {
+      const query = this.roleRepository.createQueryBuilder('role');
+
+      if (options?.q && typeof options.q === 'string') {
+        query.where('role.name LIKE :q', { q: `%${options.q}%` });
       }
+
+      return await query.getCount();
+    } catch (error) {
+      Logger.error(error);
+      if (error instanceof HttpException) throw error;
       throw new InternalServerErrorException(errorMessage.ROLE.LIST_FAILED);
     }
   }

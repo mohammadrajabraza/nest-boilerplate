@@ -8,13 +8,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CompanyEntity } from './infrastructure/persistence/entities/company.entity';
-import {
-  FindManyOptions,
-  FindOptionsWhere,
-  In,
-  Like,
-  Repository,
-} from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import errorMessage from '@/constants/error-message';
 import { CreateCompanyBodyDto } from './dtos/body/create-company.dto';
 import CompanyMapper from './infrastructure/persistence/mapper/company.mapper';
@@ -22,7 +16,8 @@ import { UpdateCompanyBodyDto } from './dtos/body/update-company.dto';
 import toSafeAsync from '@/utils/to-safe-async';
 import { UserEntity } from '../users/infrastructure/persistence/entities/user.entity';
 import { PageOptionsType } from '@/common/dto/page-options.dto';
-import { RoleType } from '@/constants/role-type';
+import { CompanyStatus } from '@/constants/company-status';
+import { GetCompaniesQueryDto } from './dtos/query/get-companies.dto';
 
 @Injectable()
 export class CompanyService {
@@ -33,15 +28,36 @@ export class CompanyService {
     private userRepository: Repository<UserEntity>,
   ) {}
 
-  async getCompanyById(id: Uuid) {
+  async getCompanyById(id: Uuid, options?: { user?: boolean }) {
     try {
-      const company = await this.companyRepository.findOne({
-        where: { id },
-      });
-      if (!company) {
+      let companyQuery = this.companyRepository
+        .createQueryBuilder('company')
+        .where('company.id = :id', { id });
+
+      // {
+      //   where: { id },
+      //   relations: {
+      //     ...(options?.user && {
+      //       users: {
+      //         userRoles: true,
+      //       },
+      //     }),
+      //   },
+      // }
+
+      if (options?.user) {
+        companyQuery = companyQuery
+          .leftJoinAndSelect('company.users', 'users')
+          .leftJoinAndSelect('users.userRoles', 'userRole')
+          .leftJoinAndSelect('userRole.role', 'role');
+      }
+
+      const comapany = await companyQuery.getOne();
+
+      if (!comapany) {
         throw new NotFoundException(errorMessage.COMPANY.NOT_FOUND);
       }
-      return company;
+      return comapany;
     } catch (error) {
       Logger.error(`Error in companyService.getCompanyById ${error.message}`);
       if (error instanceof HttpException) throw error;
@@ -54,7 +70,10 @@ export class CompanyService {
   async createCompany(data: CreateCompanyBodyDto, createdBy: Uuid) {
     try {
       const company = await this.companyRepository.save(
-        CompanyMapper.toPersistence(data, { createdBy }),
+        CompanyMapper.toPersistence(data, {
+          createdBy,
+          status: CompanyStatus.ACCEPTED,
+        }),
       );
       return company;
     } catch (error) {
@@ -66,44 +85,53 @@ export class CompanyService {
     }
   }
 
-  async listCompany(options?: PageOptionsType & { user?: boolean }) {
+  async listCompany(options?: GetCompaniesQueryDto) {
     try {
-      const where: FindOptionsWhere<CompanyEntity> = {};
+      let query = this.companyRepository.createQueryBuilder('company');
+
       if (options?.q && typeof options.q === 'string') {
-        where.name = Like(options.q);
+        query.where('company.name LIKE :q', { q: `%${options.q}%` });
       }
 
-      const findOptions: FindManyOptions<CompanyEntity> = {
-        where,
-      };
-
-      if (options && options.take && options.skip) {
-        findOptions.take = options.take;
-        findOptions.skip = options.skip;
+      if (typeof options?.skip === 'number') {
+        query.skip(options.skip);
       }
 
-      if (options && options.user) {
-        findOptions.where = {
-          ...(findOptions.where || {}),
-          users: {
-            userRoles: {
-              role: {
-                name: In([RoleType.GUEST, RoleType.USER]),
-              },
-            },
-          },
-        };
-        findOptions.relations = {
-          ...(findOptions.relations || {}),
-          users: {
-            userRoles: {
-              role: true,
-            },
-          },
-        };
+      if (typeof options?.take === 'number') {
+        query.take(options.take);
       }
 
-      const companies = await this.companyRepository.find(findOptions);
+      if (options?.sort && options?.order) {
+        query.orderBy(
+          `company.${options.sort}`,
+          options.order.toUpperCase() as 'ASC' | 'DESC',
+        );
+      }
+
+      if (options?.user) {
+        query = query
+          .leftJoinAndSelect('company.users', 'users')
+          .leftJoinAndSelect('users.userRoles', 'userRole')
+          .leftJoinAndSelect('userRole.role', 'role');
+      }
+
+      const companies = await query.getMany();
+      return companies;
+    } catch (error) {
+      Logger.error(`Error in companyService.listCompany ${error.message}`);
+      if (error instanceof HttpException) throw error;
+      throw new InternalServerErrorException(errorMessage.COMPANY.LIST_FAILED);
+    }
+  }
+
+  async countCompany(options?: Pick<PageOptionsType, 'q'>) {
+    try {
+      const query = this.companyRepository.createQueryBuilder('company');
+
+      if (options?.q && typeof options.q === 'string') {
+        query.where('company.name LIKE :q', { q: `%${options.q}%` });
+      }
+      const companies = await query.getCount();
       return companies;
     } catch (error) {
       Logger.error(`Error in companyService.listCompany ${error.message}`);

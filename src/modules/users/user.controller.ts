@@ -31,6 +31,8 @@ import errorMessage from '@/constants/error-message';
 import { GetUsersQueryDto } from './dtos/query/get-users.dto';
 import { CurrentUser } from '@/decorators/current-user.decorator';
 import { UserDto } from './domain/user.dto';
+import { Order } from '@/constants/order';
+import { UserSort } from '@/constants/sort';
 
 @Controller({ path: 'users', version: '1' })
 export class UserController {
@@ -57,16 +59,30 @@ export class UserController {
   })
   @ApiBearerAuth()
   async getUsers(@Query() query: GetUsersQueryDto) {
-    // Create the payload object expected by listUsers
-    const { role, ...pageOptions } = query;
-    const options = { ...pageOptions, skip: query.skip };
-    const users = await this.userService.listUsers(
-      {
-        role: role || undefined,
-      },
-      options,
-    );
-    return UserMapper.toDomain(users, 'LIST', options);
+    const options = {
+      page: query.page || 1,
+      take: query.take || 10,
+      order: query.order || Order.ASC,
+      skip: query.skip || 0,
+      q: query.q || undefined,
+      sort: query.sort || UserSort.CREATED_AT,
+    } as GetUsersQueryDto;
+    const [users, count] = await Promise.all([
+      this.userService.listUsers(
+        {
+          role: query.role || undefined,
+        },
+        options,
+      ),
+      this.userService.countUsers({
+        q: options.q,
+        role: query.role,
+      }),
+    ]);
+    return UserMapper.toDomain(users, 'LIST', {
+      pageOptionsDto: options,
+      itemCount: count,
+    });
   }
 
   @Post('/')

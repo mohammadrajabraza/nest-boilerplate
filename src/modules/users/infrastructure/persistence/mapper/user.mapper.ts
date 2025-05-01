@@ -11,7 +11,6 @@ import {
   IPageMetaDtoParameters,
   PageMetaDto,
 } from '@/common/dto/page-meta.dto';
-import { PageOptionsType } from '@/common/dto/page-options.dto';
 
 type UserAction = 'CREATE' | 'LIST' | 'GET' | 'UPDATE' | 'DELETE';
 
@@ -19,10 +18,8 @@ class UserMapper {
   public static toDomain<
     TAction extends UserAction,
     TOptions extends TAction extends 'LIST'
-      ? IPageMetaDtoParameters['pageOptionsDto']
-      : null = TAction extends 'LIST'
-      ? IPageMetaDtoParameters['pageOptionsDto']
-      : null,
+      ? IPageMetaDtoParameters
+      : null = TAction extends 'LIST' ? IPageMetaDtoParameters : null,
   >(
     user: TAction extends 'LIST'
       ? UserEntity[]
@@ -33,10 +30,7 @@ class UserMapper {
     options?: TOptions,
   ) {
     if (action === 'LIST' && user && Array.isArray(user) && options) {
-      const metadata = new PageMetaDto({
-        pageOptionsDto: options as PageOptionsType,
-        itemCount: user.length,
-      });
+      const metadata = new PageMetaDto(options);
       return new ListUserResponseDto(
         user.map((u) => u.toDto()),
         metadata,

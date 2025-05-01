@@ -1,4 +1,2 @@
 #!/usr/bin/env sh
-set -e
-
-npx lint-staged
+. "$(dirname "$0")/h"

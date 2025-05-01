@@ -21,16 +21,15 @@ import { ListCompanyResponseDto } from './dtos/response/list-company.dto';
 import { UpdateCompanyBodyDto } from './dtos/body/update-company.dto';
 import { BaseResponseMixin } from '@/common/dto/base-response.dto';
 import { GetCompaniesQueryDto } from './dtos/query/get-companies.dto';
-import { UserService } from '../users/user.service';
 import { CurrentUser } from '@/decorators/current-user.decorator';
 import { UserDto } from '../users/domain/user.dto';
+import { GetCompanyByIdQueryDto } from './dtos/query/get-company-by-id.dto';
+import { Order } from '@/constants/order';
+import { CompanySort } from '@/constants/sort';
 
-@Controller({ path: 'companies' })
+@Controller({ path: 'companies', version: '1' })
 export class CompanyController {
-  constructor(
-    private companyService: CompanyService,
-    private userService: UserService,
-  ) {}
+  constructor(private companyService: CompanyService) {}
 
   @Post('/')
   @HttpCode(HttpStatus.CREATED)
@@ -55,17 +54,26 @@ export class CompanyController {
   })
   @ApiBearerAuth()
   async getCompanies(@Query() query: GetCompaniesQueryDto) {
-    const { user, ...pageOptions } = query;
     const options = {
-      ...pageOptions,
-      skip: query.skip,
-    };
-    const companies = await this.companyService.listCompany({
-      ...options,
-      user,
-    });
+      page: query.page || 1,
+      take: query.take || 10,
+      order: query.order || Order.ASC,
+      skip: query.skip || 0,
+      q: query.q || undefined,
+      sort: query.sort || CompanySort.CREATED_AT,
+      user: query.user === true ? true : false,
+    } as GetCompaniesQueryDto;
+    const [companies, count] = await Promise.all([
+      this.companyService.listCompany(options),
+      this.companyService.countCompany({
+        q: options.q,
+      }),
+    ]);
 
-    return CompanyMapper.toDomain(companies, 'LIST', options);
+    return CompanyMapper.toDomain(companies, 'LIST', {
+      pageOptionsDto: options,
+      itemCount: count,
+    });
   }
 
   @Get('/:id')
@@ -75,8 +83,11 @@ export class CompanyController {
     type: CompanyResponseDto,
   })
   @ApiBearerAuth()
-  async getCompanyById(@Param('id') id: string) {
-    const company = await this.companyService.getCompanyById(id as Uuid);
+  async getCompanyById(
+    @Param('id') id: string,
+    @Query() query: GetCompanyByIdQueryDto,
+  ) {
+    const company = await this.companyService.getCompanyById(id as Uuid, query);
     return CompanyMapper.toDomain(company, 'GET');
   }
 

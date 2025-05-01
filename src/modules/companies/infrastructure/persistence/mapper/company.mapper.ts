@@ -18,10 +18,8 @@ class CompanyMapper {
   public static toDomain<
     TAction extends CompanyAction,
     TOptions extends TAction extends 'LIST'
-      ? IPageMetaDtoParameters['pageOptionsDto']
-      : null = TAction extends 'LIST'
-      ? IPageMetaDtoParameters['pageOptionsDto']
-      : null,
+      ? IPageMetaDtoParameters
+      : null = TAction extends 'LIST' ? IPageMetaDtoParameters : null,
   >(
     data: TAction extends 'LIST'
       ? CompanyEntity[]
@@ -34,10 +32,7 @@ class CompanyMapper {
     if (action === 'LIST' && data && Array.isArray(data) && options) {
       return new ListCompanyResponseDto(
         data.map((i) => i.toDto()),
-        new PageMetaDto({
-          pageOptionsDto: options,
-          itemCount: data.length,
-        }),
+        new PageMetaDto(options),
         successMessage.COMPANY.LIST,
         HttpStatus.OK,
       );

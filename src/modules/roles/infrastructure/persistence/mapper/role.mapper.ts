@@ -17,10 +17,8 @@ class RoleMapper {
   public static toDomain<
     TAction extends RoleAction,
     TOptions extends TAction extends 'LIST'
-      ? IPageMetaDtoParameters['pageOptionsDto']
-      : null = TAction extends 'LIST'
-      ? IPageMetaDtoParameters['pageOptionsDto']
-      : null,
+      ? IPageMetaDtoParameters
+      : null = TAction extends 'LIST' ? IPageMetaDtoParameters : null,
   >(
     role: TAction extends 'LIST'
       ? RoleEntity[]
@@ -33,10 +31,7 @@ class RoleMapper {
     if (action === 'LIST' && role && Array.isArray(role) && options) {
       return new ListRoleResponseDto(
         role.map((r) => r.toDto()),
-        new PageMetaDto({
-          pageOptionsDto: options,
-          itemCount: role.length,
-        }),
+        new PageMetaDto(options),
         successMessage.ROLE.LIST,
         HttpStatus.OK,
       );

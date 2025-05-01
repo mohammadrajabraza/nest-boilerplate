@@ -5,6 +5,7 @@ import {
   PhoneFieldOptional,
   StringFieldOptional,
 } from '@/decorators/field.decorator';
+import { UnauthorizedException } from '@nestjs/common';
 import type { UserEntity } from '../infrastructure/persistence/entities/user.entity';
 import { RoleType } from '@/constants/role-type';
 import { isRole } from '@/utils/is-role';
@@ -44,7 +45,7 @@ export class UserDto extends AbstractDto {
 
       this.role = isRole(role?.role.name || null);
     } else {
-      throw new Error('Invalid role');
+      throw new UnauthorizedException('Invalid role');
     }
   }
 }

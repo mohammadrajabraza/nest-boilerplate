@@ -8,7 +8,7 @@ import { UserEntity } from '@/modules/users/infrastructure/persistence/entities/
 @Entity({ name: 'roles' })
 @UseDto(RoleDto)
 export class RoleEntity extends AbstractEntity<RoleDto> {
-  @Column({ nullable: false, type: 'varchar' })
+  @Column({ nullable: false, type: 'varchar', unique: true })
   name!: string;
 
   @Column({ nullable: true, type: 'text' })

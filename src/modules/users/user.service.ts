@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './infrastructure/persistence/entities/user.entity';
-import { FindManyOptions, FindOptionsWhere, Like, Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import errorMessage from '@/constants/error-message';
 import { RoleType } from '@/constants/role-type';
 import { RoleService } from '../roles/role.service';
@@ -19,7 +19,7 @@ import { plainToInstance } from 'class-transformer';
 import { ProfileSettingEntity } from './infrastructure/persistence/entities/profile-setting.entity';
 import { AuthProviders } from '@/constants/auth-providers';
 import { UpdateUserBodyDto } from './dtos/body/update-user.dto';
-import { PageOptionsType } from '@/common/dto/page-options.dto';
+import { GetUsersQueryDto } from './dtos/query/get-users.dto';
 
 type CreateUserData = {
   firstName: string;
@@ -53,48 +53,92 @@ export class UserService {
     payload: Omit<FindOptionsWhere<UserEntity>, 'roleId'> & {
       role?: RoleType;
     } = {},
-    options?: PageOptionsType,
+    options?: GetUsersQueryDto,
   ) {
     const { role, ...rest } = payload;
-    let where: FindOptionsWhere<UserEntity>[] | FindOptionsWhere<UserEntity> =
-      rest;
-
-    if (role) {
-      where.userRoles = {
-        role: {
-          name: role,
-        },
-      };
-    }
-
-    if (options?.q && typeof options.q === 'string') {
-      const currentWhere = typeof where === 'object' ? where : {};
-      where = [
-        { ...currentWhere, firstName: Like(options.q) },
-        { ...currentWhere, lastName: Like(options.q) },
-        { ...currentWhere, email: Like(options.q) },
-        { ...currentWhere, fullName: Like(options.q) },
-      ];
-    }
-
-    const findOptions: FindManyOptions<UserEntity> = {
-      where,
-      relations: {
-        userRoles: {
-          role: true,
-        },
-      },
-    };
-    if (options && options.take && options.skip) {
-      findOptions.take = options.take;
-      findOptions.skip = options.skip;
-    }
 
     try {
-      const users = await this.userRepository.find(findOptions);
-      return users;
+      const query = this.userRepository
+        .createQueryBuilder('user')
+        .leftJoinAndSelect('user.userRoles', 'userRole')
+        .leftJoinAndSelect('userRole.role', 'role');
+
+      // Apply other filters from payload
+      Object.entries(rest).forEach(([key, value]) => {
+        query.andWhere(`user.${key} = :${key}`, { [key]: value });
+      });
+
+      // Filter by role name
+      if (role) {
+        query.andWhere('role.name = :roleName', { roleName: role });
+      }
+
+      // Full-text search
+      if (options?.q && typeof options.q === 'string') {
+        const q = `%${options.q}%`;
+        query.andWhere(
+          `(
+            user.firstName LIKE :q OR
+            user.lastName LIKE :q OR
+            user.email LIKE :q OR
+            CONCAT(user.firstName, ' ', user.lastName) LIKE :q
+          )`,
+          { q },
+        );
+      }
+
+      // Sorting
+      if (options?.sort && options?.order) {
+        query.orderBy(
+          `user.${options.sort}`,
+          options.order.toUpperCase() as 'ASC' | 'DESC',
+        );
+      }
+
+      // Pagination
+      if (typeof options?.skip !== 'undefined') {
+        query.skip(options.skip);
+      }
+
+      if (typeof options?.take !== 'undefined') {
+        query.take(options.take);
+      }
+
+      return await query.getMany();
     } catch (error) {
       Logger.error(`Error in userService.listUsers ${error.message}`);
+      throw new InternalServerErrorException(errorMessage.USER.FIND_ALL_FAILED);
+    }
+  }
+
+  async countUsers(options?: { q?: string; role?: RoleType | null }) {
+    try {
+      const query = this.userRepository
+        .createQueryBuilder('user')
+        .leftJoin('user.userRoles', 'userRole')
+        .leftJoin('userRole.role', 'role');
+
+      if (options?.role) {
+        query.andWhere('role.name = :roleName', { roleName: options.role });
+      }
+
+      if (options?.q && typeof options.q === 'string') {
+        const q = `%${options.q}%`;
+        query.andWhere(
+          `(
+            user.firstName LIKE :q OR
+            user.lastName LIKE :q OR
+            user.email LIKE :q OR
+            CONCAT(user.firstName, ' ', user.lastName) LIKE :q
+          )`,
+          { q },
+        );
+      }
+
+      const count = await query.getCount();
+      return count;
+    } catch (error) {
+      Logger.error(`Error in userService.countUsers ${error.message}`);
       throw new InternalServerErrorException(errorMessage.USER.FIND_ALL_FAILED);
     }
   }

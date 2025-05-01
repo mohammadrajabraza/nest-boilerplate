@@ -23,6 +23,8 @@ import { BaseResponseMixin } from '@/common/dto/base-response.dto';
 import { GetRolesQueryDto } from './dtos/query/get-roles.dto';
 import { CurrentUser } from '@/decorators/current-user.decorator';
 import { UserDto } from '../users/domain/user.dto';
+import { Order } from '@/constants/order';
+import { RoleSort } from '@/constants/sort';
 
 @Controller({ path: 'roles', version: '1' })
 export class RoleController {
@@ -53,9 +55,24 @@ export class RoleController {
   })
   @ApiBearerAuth()
   async getRoles(@Query() query: GetRolesQueryDto) {
-    const options = { ...query, skip: query.skip };
-    const roles = await this.roleService.listRoles(options);
-    return RoleMapper.toDomain(roles, 'LIST', options);
+    const options = {
+      page: query.page || 1,
+      take: query.take || 10,
+      order: query.order || Order.ASC,
+      sort: query.sort || RoleSort.CREATED_AT,
+      skip: query.skip || 0,
+      q: query.q || undefined,
+    } as GetRolesQueryDto;
+    const [roles, count] = await Promise.all([
+      this.roleService.listRoles(options),
+      this.roleService.countRole({
+        q: options.q,
+      }),
+    ]);
+    return RoleMapper.toDomain(roles, 'LIST', {
+      pageOptionsDto: options,
+      itemCount: count,
+    });
   }
 
   @Get('/:id')

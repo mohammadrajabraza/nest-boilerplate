@@ -18,7 +18,4 @@ export class UpdateCompanyBodyDto {
 
   @StringFieldOptional({ swagger: true })
   public industry?: string;
-
-  @StringFieldOptional({ swagger: true })
-  public status?: string;
 }

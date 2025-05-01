@@ -3,6 +3,7 @@ import { AbstractEntity } from '@/common/abstract.entity';
 import { CompanyDto } from '@/modules/companies/domain/company.dto';
 import { UseDto } from '@/decorators/use-dto.decorator';
 import { UserEntity } from '@/modules/users/infrastructure/persistence/entities/user.entity';
+import { CompanyStatus } from '@/constants/company-status';
 
 @Entity({ name: 'companies' })
 @UseDto(CompanyDto)
@@ -25,8 +26,14 @@ export class CompanyEntity extends AbstractEntity<CompanyDto> {
   @Column({ nullable: false, type: 'varchar' })
   public industry: string;
 
-  @Column({ nullable: false, type: 'varchar' })
-  public status: string;
+  @Column({
+    nullable: false,
+    type: 'enum',
+    enum: CompanyStatus,
+    enumName: 'company_status_enum',
+    default: CompanyStatus.PENDING,
+  })
+  public status: CompanyStatus;
 
   @OneToMany(() => UserEntity, (user) => user.company)
   users: UserEntity[];
