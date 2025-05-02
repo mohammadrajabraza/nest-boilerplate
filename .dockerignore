@@ -1,0 +1,33 @@
+# Ignore dependencies installed locally
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Ignore builds
+dist
+build
+
+# Ignore test output and coverage
+coverage
+test-results
+
+# Ignore env files (they will be passed explicitly via env-cmd or docker-compose)
+.env
+.env.*
+!.env.development.docker
+
+# IDE/editor settings
+.vscode
+.idea
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Git stuff
+.git
+.gitignore
+
+# Misc
+*.log
+*.tsbuildinfo
