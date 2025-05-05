@@ -13,8 +13,6 @@ test-results
 
 # Ignore env files (they will be passed explicitly via env-cmd or docker-compose)
 .env
-.env.*
-!.env.development.docker
 
 # IDE/editor settings
 .vscode
