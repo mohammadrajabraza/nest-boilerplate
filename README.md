@@ -48,6 +48,15 @@ Copy `.env-example` to `.env` and update values:
 ### 4. Access the app
 Visit: http://localhost:3000 (or your defined `${APP_PORT}`)
 
+### 5. Access the docs
+Visit: http://localhost:3000/docs (or your defined `${APP_PORT}`)
+
+### 6. Seed database (Optional, if you're running the app for the first time or database is empty) 
+```bash
+  $ docker exec -it nest_app sh
+  $ npm run seed:run
+```
+
 
 ## 🐳 Useful Docker Commands
 - Rebuild containers:
