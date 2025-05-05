@@ -372,20 +372,22 @@ export class UserService {
 
     const updatedUser = await this.findOne({ id: userId });
 
-    // Update role if changed
-    const roleEntity = await this.roleService.getRoleByName(data.role);
-    const userRole = await this.userRoleRepository.findOneByOrFail({
-      userId: updatedUser.id,
-    });
-    userRole.roleId = roleEntity.id;
-    await this.userRoleRepository.save(userRole);
+    if (data.role) {
+      // Update role if changed
+      const roleEntity = await this.roleService.getRoleByName(data.role);
+      const userRole = await this.userRoleRepository.findOneByOrFail({
+        userId: updatedUser.id,
+      });
+      userRole.roleId = roleEntity.id;
+      await this.userRoleRepository.save(userRole);
+    }
 
-    const profile = await this.findUserProfileSetting(updatedUser.id);
     if (isEmailChanged) {
+      const profile = await this.findUserProfileSetting(updatedUser.id);
       profile.isEmailVerified = false;
       profile.updatedBy = updatedBy;
+      await this.profileSettingRepository.save(profile);
     }
-    await this.profileSettingRepository.save(profile);
 
     return this.findOne({ id: updatedUser.id });
   }

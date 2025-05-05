@@ -15,6 +15,12 @@ export type AppConfig = {
     ttl: number;
     limit: number;
   };
+  cors: {
+    origins: string;
+    methods: string;
+    allowedHeaders: string;
+    credentials: boolean;
+  };
 };
 
 export type AuthConfig = {

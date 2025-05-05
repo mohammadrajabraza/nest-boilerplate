@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { Transform } from 'class-transformer';
 import { parsePhoneNumberWithError } from 'libphonenumber-js';
 import _ from 'lodash';
@@ -153,9 +154,14 @@ export function ToUpperCase(): PropertyDecorator {
 // }
 
 export function PhoneNumberSerializer(): PropertyDecorator {
-  return Transform((params) =>
-    params.value
-      ? parsePhoneNumberWithError(params.value as string).number
-      : '',
-  );
+  return Transform((params) => {
+    if (!params.value) return params.value;
+    try {
+      const phone = parsePhoneNumberWithError(params.value);
+      return phone.number;
+    } catch (error) {
+      Logger.error(`Error serializing phone number ${error.message}`);
+      return params.value;
+    }
+  });
 }

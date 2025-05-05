@@ -30,7 +30,6 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(
     AppModule,
     new ExpressAdapter(),
-    { cors: false },
   );
   app.enable('trust proxy'); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
   app.enableVersioning();
@@ -74,6 +73,8 @@ async function bootstrap() {
   const configService = app.select(SharedModule).get(ApiConfigService);
 
   app.setGlobalPrefix(configService.apiPrefix);
+
+  app.enableCors(configService.corsConfig);
 
   if (configService.documentationEnabled) {
     setupSwagger(app);

@@ -45,6 +45,22 @@ class EnvironmentVariablesValidator {
   @IsOptional()
   @IsString()
   THROTTLER_LIMIT: string;
+
+  @IsString()
+  @IsOptional()
+  CORS_ORIGINS: string;
+
+  @IsString()
+  @IsOptional()
+  CORS_METHODS: string;
+
+  @IsString()
+  @IsOptional()
+  CORS_ALLOWED_HEADERS: string;
+
+  @IsString()
+  @IsOptional()
+  CORS_CREDENTIALS: string;
 }
 
 const transformAppPort = (value: string | null) => {
@@ -111,5 +127,20 @@ export default registerAs<AppConfig>('app', () => {
           ? Number(config.THROTTLER_LIMIT)
           : 0,
     },
-  };
+    cors: {
+      origins: config.CORS_ORIGINS ? config.CORS_ORIGINS : '*',
+      methods: config.CORS_METHODS
+        ? config.CORS_METHODS
+        : ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'].join(','),
+      allowedHeaders: config.CORS_ALLOWED_HEADERS
+        ? config.CORS_ALLOWED_HEADERS
+        : ['Content-Type', 'Authorization'].join(','),
+      credentials:
+        !config.CORS_CREDENTIALS ||
+        typeof config.CORS_CREDENTIALS === 'undefined' ||
+        config.CORS_CREDENTIALS === null
+          ? true
+          : config.CORS_CREDENTIALS === 'true',
+    },
+  } as AppConfig;
 });

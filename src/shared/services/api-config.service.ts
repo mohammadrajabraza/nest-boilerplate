@@ -9,6 +9,7 @@ import { NestedKeyOf } from '@/types';
 import { ThrottlerOptions } from '@nestjs/throttler';
 import { TokenType } from '@/constants/token-type';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 
 @Injectable()
 export class ApiConfigService {
@@ -58,6 +59,15 @@ export class ApiConfigService {
       apiKey: this.get('mail.sendGrid.apiKey'),
       sender: this.get('mail.sendGrid.sender'),
     };
+  }
+
+  get corsConfig() {
+    return {
+      origin: this.get('app.cors.origins').split(','),
+      methods: this.get('app.cors.methods').split(','),
+      allowedHeaders: this.get('app.cors.allowedHeaders').split(','),
+      credentials: this.get('app.cors.credentials'),
+    } as CorsOptions;
   }
 
   get googleConfig() {

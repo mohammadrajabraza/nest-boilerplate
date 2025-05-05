@@ -2,6 +2,7 @@ import { RoleType } from '@/constants/role-type';
 import {
   EmailField,
   EnumField,
+  PhoneFieldOptional,
   StringField,
   StringFieldOptional,
 } from '@/decorators/field.decorator';
@@ -16,7 +17,7 @@ export class CreateUserBodyDto {
   @EmailField({ swagger: true })
   email: string;
 
-  @StringFieldOptional({ swagger: true })
+  @PhoneFieldOptional({ swagger: true })
   phone?: string | null;
 
   @EnumField(() => RoleType)

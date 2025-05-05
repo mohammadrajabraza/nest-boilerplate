@@ -1,4 +1,4 @@
-import { StringField } from '@/decorators/field.decorator';
+import { PhoneField, StringField } from '@/decorators/field.decorator';
 
 export class CreateCompanyBodyDto {
   @StringField({ swagger: true })
@@ -10,7 +10,7 @@ export class CreateCompanyBodyDto {
   @StringField({ swagger: true })
   public email: string;
 
-  @StringField({ swagger: true })
+  @PhoneField({ swagger: true })
   public phone: string;
 
   @StringField({ swagger: true })

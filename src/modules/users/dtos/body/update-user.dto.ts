@@ -1,8 +1,9 @@
 import { RoleType } from '@/constants/role-type';
 import {
   EmailFieldOptional,
-  EnumField,
+  EnumFieldOptional,
   PasswordFieldOptional,
+  PhoneFieldOptional,
   StringFieldOptional,
 } from '@/decorators/field.decorator';
 
@@ -19,11 +20,11 @@ export class UpdateUserBodyDto {
   @PasswordFieldOptional({ swagger: true, nullable: true })
   password?: string;
 
-  @StringFieldOptional({ swagger: true, nullable: true })
+  @PhoneFieldOptional({ swagger: true, nullable: true })
   phone?: string;
 
-  @EnumField(() => RoleType)
-  role: RoleType;
+  @EnumFieldOptional(() => RoleType, { swagger: true, nullable: true })
+  role?: RoleType;
 
   @StringFieldOptional({ swagger: true, nullable: true })
   companyId?: string;

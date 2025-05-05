@@ -3,6 +3,7 @@ import {
   EmailField,
   EnumField,
   PasswordField,
+  PhoneFieldOptional,
   StringField,
   StringFieldOptional,
 } from '@/decorators/field.decorator';
@@ -20,7 +21,7 @@ export class EmailSignupBodyDto {
   @PasswordField({ swagger: true })
   password: string;
 
-  @StringFieldOptional({ swagger: true })
+  @PhoneFieldOptional({ swagger: true })
   phone?: string | null;
 
   @EnumField(() => RoleType)
