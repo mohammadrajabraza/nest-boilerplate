@@ -194,7 +194,7 @@ export class CompanyService {
         { id: company.id },
         {
           deletedAt: new Date(),
-          deletedBy: deletedBy,
+          deletedById: deletedBy,
         },
       );
     } catch (error) {

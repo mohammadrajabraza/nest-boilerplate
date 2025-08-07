@@ -2,6 +2,8 @@ import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -9,6 +11,7 @@ import {
 import type { AbstractDto, AbstractTranslationDto } from './dto/abstract.dto';
 import { Uuid } from '@/types';
 import { LanguageCode } from '@/constants/language-code';
+import { UserEntity } from '@/modules/users/infrastructure/persistence/entities/user.entity';
 
 /**
  * Abstract Entity
@@ -45,13 +48,25 @@ export abstract class AbstractEntity<
   deletedAt!: Date;
 
   @Column({ type: 'uuid', nullable: true, default: null })
-  createdBy?: Uuid | null;
+  createdById?: Uuid | null;
 
   @Column({ type: 'uuid', nullable: true, default: null })
-  updatedBy?: Uuid | null;
+  updatedById?: Uuid | null;
 
   @Column({ type: 'uuid', nullable: true, default: null })
-  deletedBy?: Uuid | null;
+  deletedById?: Uuid | null;
+
+  @JoinColumn({ name: 'created_by_id', referencedColumnName: 'id' })
+  @ManyToOne('UserEntity')
+  createdBy: UserEntity | null;
+
+  @JoinColumn({ name: 'updated_by_id', referencedColumnName: 'id' })
+  @ManyToOne('UserEntity')
+  updatedBy: UserEntity | null;
+
+  @JoinColumn({ name: 'deleted_by_id', referencedColumnName: 'id' })
+  @ManyToOne('UserEntity')
+  deletedBy: UserEntity | null;
 
   translations?: AbstractTranslationEntity[];
 

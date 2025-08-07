@@ -231,7 +231,7 @@ export class UserService {
       const userRoleEntity = new UserRoleEntity();
       userRoleEntity.userId = user.id;
       userRoleEntity.roleId = role.id;
-      userRoleEntity.createdBy = creator;
+      userRoleEntity.createdById = creator;
 
       const profileSettingEntity = new ProfileSettingEntity();
       profileSettingEntity.isEmailVerified = false;
@@ -241,10 +241,10 @@ export class UserService {
           ? true
           : data.isPasswordReset;
       profileSettingEntity.userId = user.id;
-      profileSettingEntity.createdBy = creator;
+      profileSettingEntity.createdById = creator;
 
       await Promise.all([
-        this.userRepository.update(user.id, { createdBy: creator }),
+        this.userRepository.update(user.id, { createdById: creator }),
         this.userRoleRepository.save(userRoleEntity),
         this.profileSettingRepository.save(profileSettingEntity),
       ]);
@@ -330,8 +330,8 @@ export class UserService {
       authProviders?: string[];
       googleId?: string;
       profilePicture?: string;
-      createdBy?: Uuid;
-      updatedBy?: Uuid;
+      createdById?: Uuid;
+      updatedById?: Uuid;
     },
   ) {
     try {
@@ -367,7 +367,7 @@ export class UserService {
       phone: data.phone,
       companyId: data.companyId,
       password: data.password || undefined,
-      updatedBy: updatedBy,
+      updatedById: updatedBy,
     });
 
     const updatedUser = await this.findOne({ id: userId });
@@ -385,7 +385,7 @@ export class UserService {
     if (isEmailChanged) {
       const profile = await this.findUserProfileSetting(updatedUser.id);
       profile.isEmailVerified = false;
-      profile.updatedBy = updatedBy;
+      profile.updatedById = updatedBy;
       await this.profileSettingRepository.save(profile);
     }
 
@@ -402,15 +402,15 @@ export class UserService {
       // Set deletedBy before soft deleting each entity
       await this.profileSettingRepository.update(
         { userId },
-        { deletedBy, deletedAt: new Date() },
+        { deletedById: deletedBy, deletedAt: new Date() },
       );
       await this.userRoleRepository.update(
         { userId },
-        { deletedBy, deletedAt: new Date() },
+        { deletedById: deletedBy, deletedAt: new Date() },
       );
       await this.userRepository.update(
         { id: userId },
-        { deletedBy, deletedAt: new Date() },
+        { deletedById: deletedBy, deletedAt: new Date() },
       );
     } catch (error) {
       Logger.error(error);

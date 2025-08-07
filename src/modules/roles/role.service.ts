@@ -140,11 +140,11 @@ export class RoleService {
     try {
       await this.userRoleRepository.update(
         { roleId: role.id },
-        { deletedBy, deletedAt: new Date() },
+        { deletedById: deletedBy, deletedAt: new Date() },
       );
       await this.roleRepository.update(
         { id: role.id },
-        { deletedBy, deletedAt: new Date() },
+        { deletedById: deletedBy, deletedAt: new Date() },
       );
     } catch (error) {
       Logger.error(error);

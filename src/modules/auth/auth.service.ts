@@ -147,7 +147,7 @@ export class AuthService {
         {
           accessToken: access.token,
           refreshToken: refresh.token,
-          updatedBy: payload.userId,
+          updatedById: payload.userId,
           ...body,
         },
       );
@@ -234,7 +234,10 @@ export class AuthService {
   async resetPassword(userId: Uuid, password: string) {
     const user = await this.userService.findOne({ id: userId });
 
-    await this.userService.updateUser(user.id, { password, updatedBy: userId });
+    await this.userService.updateUser(user.id, {
+      password,
+      updatedById: userId,
+    });
     await this.userService.updateUserProfileSetting(user.id, {
       isPasswordReset: true,
     });
@@ -257,7 +260,7 @@ export class AuthService {
         {
           isLoggedIn: false,
           logoutAt: new Date(),
-          updatedBy: session.userId,
+          updatedById: session.userId,
         },
       );
     } catch (error) {
@@ -301,7 +304,7 @@ export class AuthService {
       ),
       googleId: data.providerId.toString(),
       profilePicture: data.picture,
-      updatedBy: result.data.id,
+      updatedById: result.data.id,
     });
 
     return await this.userService.findOne({ id: result.data.id });
