@@ -10,6 +10,7 @@ import { AttachmentQueryDto } from './dtos/query/attachment-query.dto';
 
 interface UploadHierarchicalParams {
   file: Express.Multer.File;
+  tenantId: Uuid;
   entityType: string;
   entityId: Uuid;
   category: string;
@@ -27,6 +28,7 @@ export class AttachmentsService {
 
   async uploadHierarchical({
     file,
+    tenantId,
     entityType,
     entityId,
     category,
@@ -45,7 +47,7 @@ export class AttachmentsService {
       const fileExtension = file.originalname.split('.').pop();
       finalFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${fileExtension}`;
     }
-    const key = `${entityType}/${entityId}/${category}/${finalFileName}`;
+    const key = `tenants/${tenantId}/${entityType}/${entityId}/${category}/${finalFileName}`;
     try {
       await this.awsS3Service.uploadFileWithKey(file, key);
       const url = this.awsS3Service.getFileUrl(key);
@@ -55,6 +57,7 @@ export class AttachmentsService {
         fileName: finalFileName,
         fileType,
         size: file.size,
+        tenantId,
         entityType,
         entityId,
         category,
@@ -75,6 +78,9 @@ export class AttachmentsService {
     try {
       const query = this.attachmentRepository
         .createQueryBuilder('attachment')
+        .where('attachment.tenantId = :tenantId', {
+          tenantId: options.tenantId,
+        })
         .andWhere('attachment.entityType = :entityType', {
           entityType: options.entityType,
         })
@@ -126,6 +132,9 @@ export class AttachmentsService {
     try {
       const query = this.attachmentRepository
         .createQueryBuilder('attachment')
+        .where('attachment.tenantId = :tenantId', {
+          tenantId: options.tenantId,
+        })
         .andWhere('attachment.entityType = :entityType', {
           entityType: options.entityType,
         })
@@ -189,12 +198,14 @@ export class AttachmentsService {
   async getAttachmentsForEntity(
     entityType: string,
     entityId: Uuid,
+    tenantId: Uuid,
   ): Promise<AttachmentEntity[]> {
     try {
       const attachments = await this.attachmentRepository.find({
         where: {
           entityType,
           entityId,
+          tenantId,
           deletedAt: IsNull(),
         },
         order: {
