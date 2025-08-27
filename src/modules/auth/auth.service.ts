@@ -60,8 +60,6 @@ export class AuthService {
       user.password,
     );
 
-    console.log(isPasswordMatch);
-
     if (!isPasswordMatch) {
       throw new UnauthorizedException(errorMessage.AUTH.INVALID_CREDENTIALS);
     }
@@ -164,17 +162,11 @@ export class AuthService {
 
   async signup(data: EmailSignupBodyDto) {
     await this.userService.checkUserByEmail(data.email);
-    if (data.companyId) {
-      const company = await this.companyService.getCompanyById(
-        data.companyId as Uuid,
-      );
-
-      data.companyId = company.id;
-    }
 
     const createdUser = await this.userService.create({
       ...data,
       provider: AuthProviders.EMAIL,
+      role: RoleType.USER,
     });
 
     const user = await this.userService.findOne({ id: createdUser.id });
@@ -183,7 +175,7 @@ export class AuthService {
       payload: {
         userId: user.id,
         email: user.email,
-        role: isRole(data.role),
+        role: RoleType.USER,
         type: TokenType.CONFIRM_EMAIL,
       },
       user,
@@ -231,7 +223,11 @@ export class AuthService {
     } as PassowrdResetPayload;
   }
 
-  async resetPassword(userId: Uuid, password: string) {
+  async resetPassword(
+    userId: Uuid,
+    password: string,
+    shouldLogoutAllSessions: boolean = false,
+  ) {
     const user = await this.userService.findOne({ id: userId });
 
     await this.userService.updateUser(user.id, {
@@ -241,6 +237,91 @@ export class AuthService {
     await this.userService.updateUserProfileSetting(user.id, {
       isPasswordReset: true,
     });
+
+    // Terminate all sessions if requested
+    if (shouldLogoutAllSessions) {
+      await this.terminateAllUserSessions(userId);
+    }
+  }
+
+  async changePassword(
+    userId: Uuid,
+    password: string,
+    shouldLogoutAllSessions: boolean = false,
+  ) {
+    const user = await this.userService.findOne({ id: userId });
+
+    await this.userService.updateUser(user.id, {
+      password,
+      updatedById: userId,
+    });
+
+    // Terminate all sessions if requested
+    if (shouldLogoutAllSessions) {
+      await this.terminateAllUserSessions(userId);
+    }
+  }
+
+  async terminateAllUserSessions(userId: Uuid) {
+    try {
+      // Get all active sessions for the user
+      const activeSessions = await this.sessionRepository.find({
+        where: {
+          userId,
+          isLoggedIn: true,
+        },
+      });
+
+      // Revoke all tokens and mark sessions as logged out
+      const tokenRevocationPromises = activeSessions.map(async (session) => {
+        try {
+          // Revoke access token
+          const accessToken = await this.tokenService.getToken(
+            session.accessToken,
+            TokenType.ACCESS,
+          );
+          if (accessToken) {
+            await this.tokenService.revokeToken(accessToken.toDto());
+          }
+
+          // Revoke refresh token
+          const refreshToken = await this.tokenService.getToken(
+            session.refreshToken,
+            TokenType.REFRESH,
+          );
+          if (refreshToken) {
+            await this.tokenService.revokeToken(refreshToken.toDto());
+          }
+
+          // Mark session as logged out
+          await this.sessionRepository.update(
+            { id: session.id },
+            {
+              isLoggedIn: false,
+              logoutAt: new Date(),
+              updatedById: userId,
+            },
+          );
+        } catch (error) {
+          Logger.error(
+            `Error revoking session ${session.id}: ${error.message}`,
+          );
+          // Continue with other sessions even if one fails
+        }
+      });
+
+      await Promise.all(tokenRevocationPromises);
+      Logger.log(
+        `Terminated ${activeSessions.length} active sessions for user ${userId}`,
+      );
+    } catch (error) {
+      Logger.error(
+        `Error terminating all sessions for user ${userId}: ${error.message}`,
+      );
+      throw new InternalServerErrorException(
+        errorMessage.AUTH.TERMINATE_SESSIONS_FAILED,
+      );
+    }
   }
 
   async logout(session: SessionDto) {

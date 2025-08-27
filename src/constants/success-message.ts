@@ -9,6 +9,7 @@ const SuccessMessage = {
     CHANGE_PASSWORD: 'Password has been successfully changed!',
     GET_ME: 'Get user info',
     LOGOUT: 'logout successful',
+    TERMINATE_USER_SESSIONS: 'All user sessions terminated successfully',
   },
   USER: {
     CREATE: 'User created successfully',

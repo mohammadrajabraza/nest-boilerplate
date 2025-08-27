@@ -20,6 +20,8 @@ import {
   ApiOkResponse,
   ApiQuery,
   ApiResponse,
+  ApiOperation,
+  ApiTags,
 } from '@nestjs/swagger';
 import { EmailLoginResponseDto } from './dtos/response/email-login.dto';
 import { TokenService } from '../token/token.service';
@@ -62,7 +64,10 @@ import { RefreshTokenResponseDto } from './dtos/response/refresh-token.dto';
 import { UserDto } from '../users/domain/user.dto';
 import { ChangePasswordResponseDto } from './dtos/response/change-password.dto';
 import { ChangePasswordBodyDto } from './dtos/body/change-password.dto';
+import { TerminateUserSessionsBodyDto } from './dtos/body/terminate-user-sessions.dto';
+import { TerminateUserSessionsResponseDto } from './dtos/response/terminate-user-sessions.dto';
 
+@ApiTags('Authentication')
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
   constructor(
@@ -80,6 +85,11 @@ export class AuthController {
   })
   @Post('email/login')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'User login',
+    description:
+      'Authenticate user with email and password, returns user info with access token',
+  })
   @ApiOkResponse({
     type: EmailLoginResponseDto,
     description: 'User info with access token',
@@ -111,6 +121,10 @@ export class AuthController {
     error: AuthAuditLogEvent.SIGNUP_FAILURE,
   })
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'User registration',
+    description: 'Register a new user account and send confirmation email',
+  })
   @ApiOkResponse({
     type: EmailSignupResponseDto,
     description: 'User info',
@@ -125,12 +139,16 @@ export class AuthController {
       data: { hash: token.token },
     });
 
-    return SignupMapper.toDomain(user, body.role);
+    return SignupMapper.toDomain(user, RoleType.USER);
   }
 
   @Public()
   @Get('email/verify')
   @Redirect()
+  @ApiOperation({
+    summary: 'Verify email address',
+    description: 'Verify user email address using confirmation token',
+  })
   @ApiResponse({
     status: HttpStatus.PERMANENT_REDIRECT,
   })
@@ -158,6 +176,10 @@ export class AuthController {
   @Public()
   @HttpCode(HttpStatus.OK)
   @Get('email/verify/success')
+  @ApiOperation({
+    summary: 'Email verification success page',
+    description: 'Success page shown after email verification',
+  })
   @ApiOkResponse({
     type: BaseResponseMixin(class {}),
   })
@@ -171,6 +193,10 @@ export class AuthController {
 
   @Public()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Email verification error page',
+    description: 'Error page shown when email verification fails',
+  })
   @ApiOkResponse({
     type: BaseResponseMixin(class {}),
   })
@@ -189,6 +215,10 @@ export class AuthController {
   @UseAuthAuditInterceptor({
     success: AuthAuditLogEvent.EMAIL_RESEND_SUCCESS,
     error: AuthAuditLogEvent.EMAIL_RESEND_ERROR,
+  })
+  @ApiOperation({
+    summary: 'Resend confirmation email',
+    description: 'Resend email confirmation link to user',
   })
   @ApiOkResponse({
     type: EmailResendResponseDto,
@@ -218,6 +248,10 @@ export class AuthController {
     success: AuthAuditLogEvent.FORGOT_PASSWORD_SUCCESS,
     error: AuthAuditLogEvent.FORGOT_PASSWORD_FAILURE,
   })
+  @ApiOperation({
+    summary: 'Forgot password',
+    description: 'Send password reset email to user',
+  })
   @ApiOkResponse({
     type: ForgotPasswordResponseDto,
   })
@@ -246,6 +280,10 @@ export class AuthController {
     success: AuthAuditLogEvent.RESET_PASSWORD_SUCCESS,
     error: AuthAuditLogEvent.RESET_PASSWORD_FAILURE,
   })
+  @ApiOperation({
+    summary: 'Reset password',
+    description: 'Reset user password using reset token',
+  })
   @ApiOkResponse({
     type: ResetPasswordResponseDto,
   })
@@ -259,7 +297,11 @@ export class AuthController {
       query.token,
     );
 
-    await this.authService.resetPassword(payload.userId, body.password);
+    await this.authService.resetPassword(
+      payload.userId,
+      body.password,
+      body.shouldLogoutAllSessions,
+    );
 
     return new ResetPasswordResponseDto(
       {},
@@ -269,10 +311,15 @@ export class AuthController {
   }
 
   @Post('/password/change')
+  @Roles(RoleType.ADMIN, RoleType.USER)
   @HttpCode(HttpStatus.OK)
   @UseAuthAuditInterceptor({
     success: AuthAuditLogEvent.CHANGE_PASSWORD_SUCCESS,
     error: AuthAuditLogEvent.CHANGE_PASSWORD_FAILURE,
+  })
+  @ApiOperation({
+    summary: 'Change password',
+    description: 'Change user password (requires authentication)',
   })
   @ApiOkResponse({
     type: ChangePasswordResponseDto,
@@ -283,7 +330,11 @@ export class AuthController {
     @Body() body: ChangePasswordBodyDto,
     @CurrentUser() user: UserDto,
   ) {
-    await this.authService.resetPassword(user.id, body.password);
+    await this.authService.changePassword(
+      user.id,
+      body.password,
+      body.shouldLogoutAllSessions,
+    );
     return new ChangePasswordResponseDto(
       {},
       successMessage.AUTH.CHANGE_PASSWORD,
@@ -292,12 +343,16 @@ export class AuthController {
   }
 
   @Get('/me')
-  @Roles(RoleType.USER, RoleType.ADMIN)
+  @Roles(RoleType.ADMIN, RoleType.USER)
   @UseAuthAuditInterceptor({
     success: AuthAuditLogEvent.ME_SUCCESS,
     error: AuthAuditLogEvent.ME_FAILURE,
   })
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Get current user',
+    description: 'Get current authenticated user information',
+  })
   @ApiBearerAuth()
   @ApiOkResponse({
     type: GetMeResponseDto,
@@ -318,6 +373,10 @@ export class AuthController {
     error: AuthAuditLogEvent.REFRESH_FAILURE,
   })
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Refresh access token',
+    description: 'Refresh access token using refresh token',
+  })
   @ApiBody({ type: RefreshTokenBody })
   @ApiHeaders([
     {
@@ -351,8 +410,12 @@ export class AuthController {
     success: AuthAuditLogEvent.LOGOUT_SUCCESS,
     error: AuthAuditLogEvent.LOGOUT_FAILURE,
   })
+  @ApiOperation({
+    summary: 'User logout',
+    description: 'Logout current user and invalidate session',
+  })
   @ApiOkResponse({ type: LogoutResponseDto })
-  @Roles(RoleType.USER, RoleType.ADMIN)
+  @Roles(RoleType.ADMIN, RoleType.USER)
   @HttpCode(HttpStatus.OK)
   async logout(@CurrentSession() session: SessionDto) {
     await this.authService.logout(session);
@@ -367,6 +430,10 @@ export class AuthController {
   })
   @UseGuards(GoogleOAuthGuard)
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Google OAuth login',
+    description: 'Initiate Google OAuth authentication flow',
+  })
   googleAuth() {
     console.log('Google auth route hit');
   }
@@ -380,6 +447,10 @@ export class AuthController {
   @UseGuards(GoogleOAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Redirect()
+  @ApiOperation({
+    summary: 'Google OAuth callback',
+    description: 'Handle Google OAuth callback and redirect with tokens',
+  })
   @ApiResponse({
     status: HttpStatus.PERMANENT_REDIRECT,
   })
@@ -409,6 +480,10 @@ export class AuthController {
   @Get('/google/success')
   @Public()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Google OAuth success',
+    description: 'Handle successful Google OAuth authentication',
+  })
   @ApiQuery({ name: 'access', type: String })
   @ApiQuery({ name: 'refresh', type: String })
   @ApiOkResponse({})
@@ -431,8 +506,41 @@ export class AuthController {
   @Get('/google/error')
   @Public()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Google OAuth error',
+    description: 'Handle Google OAuth authentication errors',
+  })
   @ApiQuery({ name: 'error', type: String })
   googleError(@Query('error') error: string) {
     return { message: error };
+  }
+
+  @Post('/terminate-user-sessions')
+  @Roles(RoleType.ADMIN)
+  @UseAuthAuditInterceptor({
+    success: AuthAuditLogEvent.LOGOUT_SUCCESS,
+    error: AuthAuditLogEvent.LOGOUT_FAILURE,
+  })
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Terminate all sessions for a user (Admin only)',
+    description:
+      'Terminate all active sessions for a specific user. Only admins can use this endpoint.',
+  })
+  @ApiOkResponse({
+    type: TerminateUserSessionsResponseDto,
+  })
+  @ApiBearerAuth()
+  @ApiBody({ type: TerminateUserSessionsBodyDto })
+  async terminateUserSessions(
+    @Body() body: TerminateUserSessionsBodyDto,
+    // @CurrentUser() adminUser: UserDto,
+  ) {
+    await this.authService.terminateAllUserSessions(body.userId as Uuid);
+    return new TerminateUserSessionsResponseDto(
+      {},
+      successMessage.AUTH.TERMINATE_USER_SESSIONS,
+      HttpStatus.OK,
+    );
   }
 }

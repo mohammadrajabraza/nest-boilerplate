@@ -45,6 +45,7 @@ const ErrorMessage = {
     LOGOUT_FAILED: 'Failed to logout',
     CANNOT_LOGIN_WITH_EMAIL: 'Cannot login with email',
     GOOGLE_ACCOUNT_MISMATCH: 'Google account mismatch',
+    TERMINATE_SESSIONS_FAILED: 'Failed to terminate user sessions',
   },
   PROFILE_SETTING: {
     NOT_FOUND: 'User profile setting not found!',
