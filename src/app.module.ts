@@ -21,7 +21,7 @@ import { UserModule } from './modules/users/user.module';
 import { RoleModule } from './modules/roles/role.module';
 import { TokenModule } from './modules/token/token.module';
 import { MailModule } from './mail/mail.module';
-import { ImageModule } from './modules/images/image.module';
+import { AttachmentsModule } from './modules/attachments/attachments.module';
 import { CompanyModule } from './modules/companies/company.module';
 
 @Module({
@@ -82,7 +82,7 @@ import { CompanyModule } from './modules/companies/company.module';
     UserModule,
     RoleModule,
     TokenModule,
-    ImageModule,
+    AttachmentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

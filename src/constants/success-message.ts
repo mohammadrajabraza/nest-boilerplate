@@ -31,6 +31,12 @@ const SuccessMessage = {
     DELETE: 'Company deleted succesfully',
     GET: 'Company get successfully',
   },
+  ATTACHMENT: {
+    UPLOAD: 'Attachment uploaded successfully',
+    DELETE: 'Attachment deleted successfully',
+    LIST: 'Attachments listed successfully',
+    GET: 'Attachment retrieved successfully',
+  },
 };
 
 export default Object.freeze(SuccessMessage);

@@ -220,8 +220,15 @@ export class ApiConfigService {
 
   get imageUploadConfig() {
     return {
-      maxFileSize: 5 * 1024 * 1024,
+      maxFileSize: 2 * 1024 * 1024,
       allowedMimeTypes: ['image/png', 'image/jpg', 'image/jpeg'],
+    };
+  }
+
+  get documentUploadConfig() {
+    return {
+      maxFileSize: 5 * 1024 * 1024,
+      allowedMimeTypes: ['application/pdf'],
     };
   }
 

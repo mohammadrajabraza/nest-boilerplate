@@ -57,6 +57,14 @@ const ErrorMessage = {
   AUTH_AUDIT_LOG: {
     CREATION_FAILED: 'failed to create auth audit log',
   },
+  ATTACHMENT: {
+    UPLOAD_FAILED: 'Failed to upload attachment',
+    DELETE_FAILED: 'Failed to delete attachment',
+    LIST_FAILED: 'Failed to list attachments',
+    NOT_FOUND: 'Attachment not found',
+    NO_FILE: 'No file uploaded',
+    FILE_NAME_REQUIRED: 'fileName is required',
+  },
 };
 
 export default Object.freeze(ErrorMessage);

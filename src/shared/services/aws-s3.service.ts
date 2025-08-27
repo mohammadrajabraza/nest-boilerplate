@@ -2,8 +2,10 @@ import {
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
+  ListObjectsV2Command,
+  DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import mime from 'mime-types';
 
 import type { IFile } from '@/interfaces/IFile';
@@ -30,8 +32,11 @@ export class AwsS3Service {
     });
   }
 
-  public getFileUrl(fileName: string) {
-    return `${this.configService.backendDomain}/api/v1/images/download/${fileName}`;
+  public getFileUrl(key: string) {
+    // Return the public S3 URL for the object
+    const bucket = this.configService.s3BucketName;
+    const region = this.configService.awsConfig.region;
+    return `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
   }
 
   async uploadImage(file: IFile): Promise<string> {
@@ -46,7 +51,7 @@ export class AwsS3Service {
     }
 
     const fileName = this.generatorService.fileName(fileExtension);
-    const key = `images/${fileName}`;
+    const key = `attachments/${fileName}`;
 
     // Derive ContentType with fallback
     const contentType =
@@ -71,12 +76,36 @@ export class AwsS3Service {
     }
   }
 
-  async getImageBuffer(fileName: string) {
+  async uploadFileWithKey(
+    file: Express.Multer.File,
+    key: string,
+  ): Promise<void> {
+    if (!file || !file.mimetype || !file.buffer) {
+      throw new Error('File, MIME type, or buffer is missing');
+    }
+    const contentType = file.mimetype;
+    const contentLength = file.size || file.buffer.length;
+    try {
+      await this.s3.send(
+        new PutObjectCommand({
+          Bucket: this.configService.s3BucketName,
+          Body: file.buffer,
+          Key: key,
+          ContentType: contentType,
+          ContentLength: contentLength,
+        }),
+      );
+    } catch (error) {
+      throw new Error(`Failed to upload file to S3: ${error.message}`);
+    }
+  }
+
+  async getFileBuffer(key: string) {
     try {
       const response = await this.s3.send(
         new GetObjectCommand({
           Bucket: this.configService.s3BucketName,
-          Key: `images/${fileName}`,
+          Key: key,
         }),
       );
 
@@ -85,11 +114,40 @@ export class AwsS3Service {
 
       return { fileBuffer, contentType };
     } catch (error) {
-      let message = 'Image downloading failed!';
+      let message = 'File downloading failed!';
       if (error instanceof Error) {
         message = error.message;
       }
-      throw new InternalServerErrorException(message);
+      throw new BadRequestException(message);
+    }
+  }
+
+  async deleteFileWithKey(key: string): Promise<void> {
+    try {
+      await this.s3.send(
+        new DeleteObjectCommand({
+          Bucket: this.configService.s3BucketName,
+          Key: key,
+        }),
+      );
+    } catch (error) {
+      throw new Error(`Failed to delete file from S3: ${error.message}`);
+    }
+  }
+
+  async listFilesWithPrefix(prefix: string): Promise<string[]> {
+    try {
+      const result = await this.s3.send(
+        new ListObjectsV2Command({
+          Bucket: this.configService.s3BucketName,
+          Prefix: prefix,
+        }),
+      );
+      return (result.Contents || [])
+        .map((obj) => obj.Key || '')
+        .filter(Boolean);
+    } catch (error) {
+      throw new Error(`Failed to list files from S3: ${error.message}`);
     }
   }
 }

@@ -6,6 +6,7 @@ import { UserRoleEntity } from '@/modules/roles/infrastructure/persistence/entit
 import { TokenEntity } from '@/modules/token/infrastructure/persistence/entities/token.entity';
 import { ProfileSettingEntity } from '@/modules/users/infrastructure/persistence/entities/profile-setting.entity';
 import { UserEntity } from '@/modules/users/infrastructure/persistence/entities/user.entity';
+import { AttachmentEntity } from '@/modules/attachments/infrastructure/persistence/entities/attachment.entity';
 
 export default [
   CompanyEntity,
@@ -16,4 +17,5 @@ export default [
   SessionEntity,
   AuthAuditLogEntity,
   TokenEntity,
+  AttachmentEntity,
 ];
