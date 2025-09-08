@@ -1,4 +1,4 @@
-import { CreateRoleBodyDto } from '@/modules/roles/dtos/body/create-role.dto';
+import type { CreateRoleBodyDto } from '@/modules/roles/dtos/body/create-role.dto';
 import { RoleEntity } from '../entities/role.entity';
 import { plainToInstance } from 'class-transformer';
 import { RoleResponseDto } from '@/modules/roles/dtos/response/role.dto';
@@ -6,25 +6,18 @@ import successMessage from '@/constants/success-message';
 import { HttpStatus } from '@nestjs/common';
 import { ListRoleResponseDto } from '@/modules/roles/dtos/response/list-role.dto';
 import { BaseResponseMixin } from '@/common/dto/base-response.dto';
-import {
-  IPageMetaDtoParameters,
-  PageMetaDto,
-} from '@/common/dto/page-meta.dto';
+import { type IPageMetaDtoParameters, PageMetaDto } from '@/common/dto/page-meta.dto';
 
 type RoleAction = 'CREATE' | 'LIST' | 'GET' | 'UPDATE' | 'DELETE';
 
 class RoleMapper {
   public static toDomain<
     TAction extends RoleAction,
-    TOptions extends TAction extends 'LIST'
+    TOptions extends TAction extends 'LIST' ? IPageMetaDtoParameters : null = TAction extends 'LIST'
       ? IPageMetaDtoParameters
-      : null = TAction extends 'LIST' ? IPageMetaDtoParameters : null,
+      : null,
   >(
-    role: TAction extends 'LIST'
-      ? RoleEntity[]
-      : TAction extends 'DELETE'
-        ? null
-        : RoleEntity,
+    role: TAction extends 'LIST' ? RoleEntity[] : TAction extends 'DELETE' ? null : RoleEntity,
     action: TAction,
     options: TOptions = {} as TOptions,
   ) {
@@ -49,10 +42,7 @@ class RoleMapper {
     throw new Error('Invalid action');
   }
 
-  public static toPersistence(
-    body: Partial<CreateRoleBodyDto>,
-    role: RoleEntity | object = {},
-  ) {
+  public static toPersistence(body: Partial<CreateRoleBodyDto>, role: RoleEntity | object = {}) {
     return plainToInstance(RoleEntity, {
       ...role,
       ...body,

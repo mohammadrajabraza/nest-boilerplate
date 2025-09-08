@@ -1,7 +1,4 @@
-import {
-  PasswordField,
-  BooleanFieldOptional,
-} from '@/decorators/field.decorator';
+import { PasswordField, BooleanFieldOptional } from '@/decorators/field.decorator';
 
 export class ResetPasswordBodyDto {
   @PasswordField({
@@ -14,8 +11,7 @@ export class ResetPasswordBodyDto {
 
   @BooleanFieldOptional({
     swagger: true,
-    description:
-      'If true, all active sessions will be terminated and user will need to login everywhere again',
+    description: 'If true, all active sessions will be terminated and user will need to login everywhere again',
     example: false,
   })
   shouldLogoutAllSessions?: boolean;

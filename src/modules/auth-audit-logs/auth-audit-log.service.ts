@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthAuditLogEntity } from './infrastructure/entities/auth-audit-log.entity';
 import { Repository } from 'typeorm';
@@ -39,9 +35,7 @@ export class AuthAuditLogService {
       );
     } catch (error) {
       Logger.error(error);
-      throw new InternalServerErrorException(
-        errorMessage.AUTH_AUDIT_LOG.CREATION_FAILED,
-      );
+      throw new InternalServerErrorException(errorMessage.AUTH_AUDIT_LOG.CREATION_FAILED);
     }
   }
 }

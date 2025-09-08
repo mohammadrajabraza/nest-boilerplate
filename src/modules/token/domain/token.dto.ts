@@ -1,10 +1,4 @@
-import {
-  BooleanField,
-  DateField,
-  EnumField,
-  StringField,
-  UUIDField,
-} from '@/decorators/field.decorator';
+import { BooleanField, DateField, EnumField, StringField, UUIDField } from '@/decorators/field.decorator';
 import type { TokenEntity } from '../infrastructure/persistence/entities/token.entity';
 import { TokenType } from '@/constants/token-type';
 
@@ -35,12 +29,9 @@ export class TokenDto {
   isRevoked: boolean;
 
   constructor(token: TokenEntity) {
-    const tokenType = [
-      TokenType.ACCESS,
-      TokenType.REFRESH,
-      TokenType.CONFIRM_EMAIL,
-      TokenType.PASSWORD_RESET,
-    ].find((type) => token.tokenType === type);
+    const tokenType = [TokenType.ACCESS, TokenType.REFRESH, TokenType.CONFIRM_EMAIL, TokenType.PASSWORD_RESET].find(
+      (type) => token.tokenType === type,
+    );
 
     if (!tokenType) {
       throw new Error('Invalid token type');

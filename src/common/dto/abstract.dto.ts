@@ -34,11 +34,7 @@ export class AbstractDto {
       );
 
       if (translationEntity) {
-        const metadata = Reflect.getMetadata(
-          DYNAMIC_TRANSLATION_DECORATOR_KEY,
-          this,
-          key,
-        );
+        const metadata = Reflect.getMetadata(DYNAMIC_TRANSLATION_DECORATOR_KEY, this, key);
 
         if (!metadata) return undefined;
 

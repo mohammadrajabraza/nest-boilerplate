@@ -7,12 +7,7 @@ import { SharedModule } from './shared/shared.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfigService } from './database/typeorm-config.service';
 import { ApiConfigService } from './shared/services/api-config.service';
-import {
-  AcceptLanguageResolver,
-  HeaderResolver,
-  I18nModule,
-  QueryResolver,
-} from 'nestjs-i18n';
+import { AcceptLanguageResolver, HeaderResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
 import { ClsModule, ClsMiddleware } from 'nestjs-cls';
 import path from 'path';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -60,8 +55,7 @@ import { CompanyModule } from './modules/companies/company.module';
             includeSubfolders: true,
           },
           parserOptions: {
-            transform: (locale: string) =>
-              configService.localeMapping?.[locale] || locale,
+            transform: (locale: string) => configService.localeMapping?.[locale] || locale,
           },
         };
       },
@@ -89,8 +83,6 @@ import { CompanyModule } from './modules/companies/company.module';
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(ClsMiddleware)
-      .forRoutes({ path: '*', method: RequestMethod.ALL });
+    consumer.apply(ClsMiddleware).forRoutes({ path: '*', method: RequestMethod.ALL });
   }
 }

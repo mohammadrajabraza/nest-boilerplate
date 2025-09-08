@@ -1,20 +1,11 @@
-import {
-  CallHandler,
-  ExecutionContext,
-  Injectable,
-  Logger,
-  NestInterceptor,
-  UseInterceptors,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, Logger, NestInterceptor, UseInterceptors } from '@nestjs/common';
 import { catchError, Observable, tap, throwError } from 'rxjs';
 import { AuthAuditLogService } from '@/modules/auth-audit-logs/auth-audit-log.service';
 import { AuthAuditLogEvent } from '@/constants/auth-audit-log-event';
 import { CustomRequest } from '@/types/jwt';
 import * as requestIp from 'request-ip';
 
-function CreateAuthAuditInterceptor(
-  events: Record<'success' | 'error', AuthAuditLogEvent>,
-) {
+function CreateAuthAuditInterceptor(events: Record<'success' | 'error', AuthAuditLogEvent>) {
   @Injectable()
   class AuthAuditInterceptor implements NestInterceptor {
     constructor(private readonly auditService: AuthAuditLogService) {}
@@ -55,9 +46,7 @@ function CreateAuthAuditInterceptor(
                 stack: err.stack,
               }),
             })
-            .catch((logErr) =>
-              Logger.error(`❌ Failed to log auth audit: ${logErr.message}`),
-            );
+            .catch((logErr) => Logger.error(`❌ Failed to log auth audit: ${logErr.message}`));
 
           return throwError(() => err); // rethrow the original error
         }),
@@ -68,8 +57,6 @@ function CreateAuthAuditInterceptor(
   return AuthAuditInterceptor;
 }
 
-export const UseAuthAuditInterceptor = (
-  events: Record<'success' | 'error', AuthAuditLogEvent>,
-) => {
+export const UseAuthAuditInterceptor = (events: Record<'success' | 'error', AuthAuditLogEvent>) => {
   return UseInterceptors(CreateAuthAuditInterceptor(events));
 };

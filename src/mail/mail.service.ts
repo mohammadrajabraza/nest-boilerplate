@@ -67,9 +67,7 @@ export class MailService {
       ]);
     }
 
-    const url = new URL(
-      this.apiConfigService.frontendDomain + '/confirm-email',
-    );
+    const url = new URL(`${this.apiConfigService.frontendDomain}/confirm-email`);
     url.searchParams.set('hash', mailData.data.hash);
 
     await this.sendMail({
@@ -95,9 +93,7 @@ export class MailService {
     });
   }
 
-  async createUser(
-    mailData: MailData<{ hash: string; password: string }>,
-  ): Promise<void> {
+  async createUser(mailData: MailData<{ hash: string; password: string }>): Promise<void> {
     const i18n = I18nContext.current();
     let emailConfirmTitle: MaybeType<string>;
     let text1: MaybeType<string>;
@@ -106,19 +102,16 @@ export class MailService {
     let passwordText: MaybeType<string>;
 
     if (i18n) {
-      [emailConfirmTitle, text1, text2, text3, passwordText] =
-        await Promise.all([
-          i18n.t('common.confirmEmail'),
-          i18n.t('create-user.text1'),
-          i18n.t('create-user.text2'),
-          i18n.t('create-user.text3'),
-          i18n.t('create-user.passwordText'),
-        ]);
+      [emailConfirmTitle, text1, text2, text3, passwordText] = await Promise.all([
+        i18n.t('common.confirmEmail'),
+        i18n.t('create-user.text1'),
+        i18n.t('create-user.text2'),
+        i18n.t('create-user.text3'),
+        i18n.t('create-user.passwordText'),
+      ]);
     }
 
-    const url = new URL(
-      this.apiConfigService.frontendDomain + '/confirm-email',
-    );
+    const url = new URL(`${this.apiConfigService.frontendDomain}/confirm-email`);
     url.searchParams.set('hash', mailData.data.hash);
 
     await this.sendMail({
@@ -146,9 +139,7 @@ export class MailService {
     });
   }
 
-  async forgotPassword(
-    mailData: MailData<{ hash: string; tokenExpires: number }>,
-  ): Promise<void> {
+  async forgotPassword(mailData: MailData<{ hash: string; tokenExpires: number }>): Promise<void> {
     const i18n = I18nContext.current();
     let resetPasswordTitle: MaybeType<string>;
     let text1: MaybeType<string>;
@@ -166,9 +157,7 @@ export class MailService {
       ]);
     }
 
-    const url = new URL(
-      this.apiConfigService.frontendDomain + '/password-change',
-    );
+    const url = new URL(`${this.apiConfigService.frontendDomain}/password-change`);
     url.searchParams.set('hash', mailData.data.hash);
     url.searchParams.set('expires', mailData.data.tokenExpires.toString());
 
@@ -212,9 +201,7 @@ export class MailService {
       ]);
     }
 
-    const url = new URL(
-      this.apiConfigService.frontendDomain + '/confirm-new-email',
-    );
+    const url = new URL(`${this.apiConfigService.frontendDomain}/confirm-new-email`);
     url.searchParams.set('hash', mailData.data.hash);
 
     await this.sendMail({

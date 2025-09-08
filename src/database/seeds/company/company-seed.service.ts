@@ -31,13 +31,9 @@ export class CompanySeedService {
         where: { name: data.name },
       });
       if (company) {
-        return await this.companyRepository.save(
-          plainToInstance(CompanyEntity, { ...company, ...data }),
-        );
+        return await this.companyRepository.save(plainToInstance(CompanyEntity, { ...company, ...data }));
       }
-      return await this.companyRepository.save(
-        plainToInstance(CompanyEntity, data),
-      );
+      return await this.companyRepository.save(plainToInstance(CompanyEntity, data));
     } catch (error) {
       Logger.error(error);
       throw error;
@@ -45,8 +41,6 @@ export class CompanySeedService {
   }
 
   async run() {
-    await Promise.all(
-      this.companies.map((company) => this.saveCompany(company)),
-    );
+    await Promise.all(this.companies.map((company) => this.saveCompany(company)));
   }
 }

@@ -1,15 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Post,
-  Put,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { RoleService } from './role.service';
 import { Roles } from '@/decorators/role.decorator';
 import { RoleType } from '@/constants/role-type';
@@ -38,10 +27,7 @@ export class RoleController {
     status: HttpStatus.CREATED,
   })
   @ApiBearerAuth()
-  async createRole(
-    @Body() body: CreateRoleBodyDto,
-    @CurrentUser() CurrentUser: UserDto,
-  ) {
+  async createRole(@Body() body: CreateRoleBodyDto, @CurrentUser() CurrentUser: UserDto) {
     const role = await this.roleService.createRole(body, CurrentUser.id);
     return RoleMapper.toDomain(role, 'CREATE');
   }
@@ -96,11 +82,7 @@ export class RoleController {
     status: HttpStatus.OK,
   })
   @ApiBearerAuth()
-  async updateRole(
-    @Param('id') id: string,
-    @Body() body: UpdateRoleBodyDto,
-    @CurrentUser() admin: UserDto,
-  ) {
+  async updateRole(@Param('id') id: string, @Body() body: UpdateRoleBodyDto, @CurrentUser() admin: UserDto) {
     const role = await this.roleService.updateRole(id, body, admin.id);
     return RoleMapper.toDomain(role, 'UPDATE');
   }

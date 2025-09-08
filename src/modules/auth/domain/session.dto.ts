@@ -1,10 +1,5 @@
 import { AbstractDto } from '@/common/dto/abstract.dto';
-import {
-  BooleanField,
-  DateField,
-  DateFieldOptional,
-  StringFieldOptional,
-} from '@/decorators/field.decorator';
+import { BooleanField, DateField, DateFieldOptional, StringFieldOptional } from '@/decorators/field.decorator';
 import type { SessionEntity } from '../infrastructure/persistence/entities/session.entity';
 
 export class SessionDto extends AbstractDto {

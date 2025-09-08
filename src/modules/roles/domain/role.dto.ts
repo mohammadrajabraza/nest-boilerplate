@@ -1,9 +1,6 @@
 import { AbstractDto } from '@/common/dto/abstract.dto';
 import { RoleType } from '@/constants/role-type';
-import {
-  EnumFieldOptional,
-  StringFieldOptional,
-} from '@/decorators/field.decorator';
+import { EnumFieldOptional, StringFieldOptional } from '@/decorators/field.decorator';
 import type { RoleEntity } from '../infrastructure/persistence/entities/role.entity';
 
 export class RoleDto extends AbstractDto {

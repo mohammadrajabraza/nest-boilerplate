@@ -6,8 +6,7 @@ export class DocumentValidationPipe {
   constructor(private apiConfigService: ApiConfigService) {}
 
   create(fileIsRequired: boolean = false) {
-    const { maxFileSize, allowedMimeTypes } =
-      this.apiConfigService.documentUploadConfig;
+    const { maxFileSize, allowedMimeTypes } = this.apiConfigService.documentUploadConfig;
 
     return new ParseFilePipeBuilder()
       .addFileTypeValidator({

@@ -6,8 +6,7 @@ export class ImageValidationPipe {
   constructor(private apiConfigService: ApiConfigService) {}
 
   create(fileIsRequired: boolean = false) {
-    const { maxFileSize, allowedMimeTypes } =
-      this.apiConfigService.imageUploadConfig;
+    const { maxFileSize, allowedMimeTypes } = this.apiConfigService.imageUploadConfig;
 
     return new ParseFilePipeBuilder()
       .addFileTypeValidator({

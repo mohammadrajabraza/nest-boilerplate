@@ -1,7 +1,4 @@
-import {
-  PhoneFieldOptional,
-  StringFieldOptional,
-} from '@/decorators/field.decorator';
+import { PhoneFieldOptional, StringFieldOptional } from '@/decorators/field.decorator';
 
 export class UpdateCompanyBodyDto {
   @StringFieldOptional({ swagger: true })

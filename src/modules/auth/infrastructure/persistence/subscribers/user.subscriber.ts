@@ -1,11 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  Connection,
-  EntitySubscriberInterface,
-  EventSubscriber,
-  InsertEvent,
-  UpdateEvent,
-} from 'typeorm';
+import { Connection, EntitySubscriberInterface, EventSubscriber, InsertEvent, UpdateEvent } from 'typeorm';
 import { UserEntity } from '@/modules/users/infrastructure/persistence/entities/user.entity';
 import { HashingService } from '@/shared/services/hashing.service';
 
@@ -32,11 +26,7 @@ export class UserSubscriber implements EntitySubscriberInterface<UserEntity> {
 
   async beforeUpdate(event: UpdateEvent<UserEntity>): Promise<void> {
     const userEntity = event.entity;
-    if (
-      userEntity &&
-      userEntity.password &&
-      userEntity.password !== 'invalid'
-    ) {
+    if (userEntity?.password && userEntity.password !== 'invalid') {
       userEntity.password = await this.hashingService.hash(userEntity.password);
     }
   }

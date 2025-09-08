@@ -17,8 +17,25 @@ const compat = new FlatCompat({
 export default [
   ...compat.extends(
     'plugin:@typescript-eslint/recommended',
+    'plugin:@typescript-eslint/recommended-requiring-type-checking',
     'plugin:prettier/recommended',
   ),
+  {
+    ignores: [
+      'node_modules/',
+      'dist/',
+      'build/',
+      'coverage/',
+      '*.sql',
+      'dump.sql/',
+      'logs/',
+      '*.log',
+      '*.d.ts',
+      '*.js.map',
+      '*.d.ts.map',
+      'src/database/migrations/*.ts',
+    ],
+  },
   {
     plugins: {
       '@typescript-eslint': tsEslintPlugin,
@@ -29,7 +46,7 @@ export default [
         ...globals.jest,
       },
       parser: tsParser,
-      ecmaVersion: 5,
+      ecmaVersion: 2023,
       sourceType: 'module',
       parserOptions: {
         project: 'tsconfig.json',
@@ -37,15 +54,51 @@ export default [
       },
     },
     rules: {
+      // TypeScript specific rules
       '@typescript-eslint/interface-name-prefix': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
-      'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': ['error'],
-      'require-await': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { 
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_'
+        },
+      ],
       '@typescript-eslint/require-await': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': 'warn',
+      '@typescript-eslint/prefer-nullish-coalescing': 'warn',
+      '@typescript-eslint/prefer-optional-chain': 'warn',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
+      '@typescript-eslint/no-non-null-assertion': 'warn',
+      '@typescript-eslint/consistent-type-imports': [
+        'warn',
+        { prefer: 'type-imports', fixStyle: 'inline-type-imports' }
+      ],
+      '@typescript-eslint/consistent-type-exports': 'warn',
+      '@typescript-eslint/no-import-type-side-effects': 'warn',
+      '@typescript-eslint/no-unsafe-assignment': 'warn',
+      '@typescript-eslint/no-unsafe-member-access': 'warn',
+      '@typescript-eslint/no-unsafe-call': 'warn',
+      '@typescript-eslint/no-unsafe-argument': 'warn',
+      '@typescript-eslint/no-unsafe-return': 'warn',
+      '@typescript-eslint/no-unsafe-enum-comparison': 'warn',
+      '@typescript-eslint/no-redundant-type-constituents': 'warn',
+      
+      // General rules
+      'no-unused-vars': 'off', // Handled by @typescript-eslint/no-unused-vars
+      'require-await': 'off', // Handled by @typescript-eslint/require-await
+      'no-console': 'warn',
+      'no-debugger': 'error',
+      'prefer-const': 'error',
+      'no-var': 'error',
+      'object-shorthand': 'warn',
+      'prefer-template': 'warn',
+      
+      // NestJS specific rules
       'no-restricted-syntax': [
         'error',
         {
@@ -60,15 +113,30 @@ export default [
           message: '"it" should start with "should"',
         },
       ],
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^_' },
-      ],
     },
     settings: {
       'import/resolver': {
-        typescript: {},
+        typescript: {
+          alwaysTryTypes: true,
+          project: './tsconfig.json',
+        },
       },
+    },
+  },
+  // Test files configuration
+  {
+    files: ['**/*.spec.ts', '**/*.test.ts', '**/test/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+    },
+  },
+  // Configuration files
+  {
+    files: ['**/*.config.{js,mjs,ts}', '**/eslint.config.*', '**/jest.config.*'],
+    rules: {
+      '@typescript-eslint/no-var-requires': 'off',
+      'no-console': 'off',
     },
   },
 ];

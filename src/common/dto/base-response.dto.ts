@@ -1,9 +1,4 @@
-import {
-  ClassField,
-  StringField,
-  NumberField,
-  BooleanField,
-} from '@/decorators/field.decorator';
+import { ClassField, StringField, NumberField, BooleanField } from '@/decorators/field.decorator';
 import { PageMetaDto } from './page-meta.dto';
 
 export interface IBaseListResponse<TData> {
@@ -28,11 +23,7 @@ type BaseListResponseType<T> = new (
   statusCode?: number,
 ) => IBaseListResponse<T>;
 
-type BaseResponseType<T> = new (
-  data: T,
-  message: string,
-  statusCode?: number,
-) => IBaseResponse<T>;
+type BaseResponseType<T> = new (data: T, message: string, statusCode?: number) => IBaseResponse<T>;
 
 export function BaseResponseMixin<
   T,
@@ -90,12 +81,7 @@ export function BaseResponseMixin<
       @BooleanField({ description: 'Indicates if the request was successful' })
       public success: boolean;
 
-      constructor(
-        data: T[],
-        meta: PageMetaDto,
-        message: string,
-        statusCode: number,
-      ) {
+      constructor(data: T[], meta: PageMetaDto, message: string, statusCode: number) {
         this.data = data;
         this.meta = meta;
         this.message = message;

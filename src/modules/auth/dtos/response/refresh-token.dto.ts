@@ -7,6 +7,4 @@ export class RefreshResponseDto {
   tokens: AuthTokenResponseDto;
 }
 
-export class RefreshTokenResponseDto extends BaseResponseMixin(
-  RefreshResponseDto,
-) {}
+export class RefreshTokenResponseDto extends BaseResponseMixin(RefreshResponseDto) {}

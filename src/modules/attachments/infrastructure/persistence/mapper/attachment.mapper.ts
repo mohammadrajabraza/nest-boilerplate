@@ -5,25 +5,18 @@ import successMessage from '@/constants/success-message';
 import { HttpStatus } from '@nestjs/common';
 import { ListAttachmentDto } from '@/modules/attachments/dtos/response/list-attachment.dto';
 import { BaseResponseMixin } from '@/common/dto/base-response.dto';
-import {
-  IPageMetaDtoParameters,
-  PageMetaDto,
-} from '@/common/dto/page-meta.dto';
+import { type IPageMetaDtoParameters, PageMetaDto } from '@/common/dto/page-meta.dto';
 
 type AttachmentAction = 'UPLOAD' | 'LIST' | 'GET' | 'DELETE';
 
 class AttachmentMapper {
   public static toDomain<
     TAction extends AttachmentAction,
-    TOptions extends TAction extends 'LIST'
+    TOptions extends TAction extends 'LIST' ? IPageMetaDtoParameters : null = TAction extends 'LIST'
       ? IPageMetaDtoParameters
-      : null = TAction extends 'LIST' ? IPageMetaDtoParameters : null,
+      : null,
   >(
-    data: TAction extends 'LIST'
-      ? AttachmentEntity[]
-      : TAction extends 'DELETE'
-        ? null
-        : AttachmentEntity,
+    data: TAction extends 'LIST' ? AttachmentEntity[] : TAction extends 'DELETE' ? null : AttachmentEntity,
     action: TAction,
     options?: TOptions,
   ) {
@@ -36,11 +29,7 @@ class AttachmentMapper {
       );
     } else if (action === 'DELETE' && !data) {
       const DeleteResponse = BaseResponseMixin(class {});
-      return new DeleteResponse(
-        {},
-        successMessage.ATTACHMENT.DELETE,
-        HttpStatus.OK,
-      );
+      return new DeleteResponse({}, successMessage.ATTACHMENT.DELETE, HttpStatus.OK);
     } else if (data && !Array.isArray(data)) {
       const response = new AttachmentResponseDto(
         data.toDto(),
@@ -56,10 +45,7 @@ class AttachmentMapper {
     throw new Error('Invalid action');
   }
 
-  public static toPersistence(
-    attachmentData: any,
-    attachment: AttachmentEntity | object = {},
-  ) {
+  public static toPersistence(attachmentData: any, attachment: AttachmentEntity | object = {}) {
     return plainToInstance(AttachmentEntity, {
       ...attachment,
       ...attachmentData,

@@ -8,11 +8,7 @@ import { RoleModule } from '../roles/role.module';
 import entities from '@/database/entities';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature(entities),
-    forwardRef(() => UserModule),
-    forwardRef(() => RoleModule),
-  ],
+  imports: [TypeOrmModule.forFeature(entities), forwardRef(() => UserModule), forwardRef(() => RoleModule)],
   controllers: [CompanyController],
   providers: [CompanyService, UserService],
   exports: [CompanyService],

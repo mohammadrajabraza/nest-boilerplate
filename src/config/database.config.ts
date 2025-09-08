@@ -1,13 +1,5 @@
 import { registerAs } from '@nestjs/config';
-import {
-  IsOptional,
-  IsInt,
-  Min,
-  Max,
-  IsString,
-  IsBoolean,
-  IsIn,
-} from 'class-validator';
+import { IsOptional, IsInt, Min, Max, IsString, IsBoolean, IsIn } from 'class-validator';
 import { Transform } from 'class-transformer';
 import validateConfig from '@/utils/validate-config';
 import { DatabaseConfig } from './config.type';
@@ -25,15 +17,11 @@ class EnvironmentVariablesValidator {
       // Handle both strings and numbers
       const stringValue = String(value).trim();
       if (!/^\d+$/.test(stringValue)) {
-        throw new Error(
-          `DATABASE_PORT must be a valid integer, received: "${stringValue}"`,
-        );
+        throw new Error(`DATABASE_PORT must be a valid integer, received: "${stringValue}"`);
       }
       const parsed = parseInt(stringValue, 10);
       if (isNaN(parsed) || parsed < 0 || parsed > 65535) {
-        throw new Error(
-          `DATABASE_PORT must be between 0 and 65535, received: ${parsed}`,
-        );
+        throw new Error(`DATABASE_PORT must be between 0 and 65535, received: ${parsed}`);
       }
       return parsed;
     },

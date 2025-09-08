@@ -135,9 +135,7 @@ export class ApiConfigService {
         redirect: {
           success: this.get('auth.confirm-email.redirect.success'),
           error: this.get('auth.confirm-email.redirect.error'),
-          'password-reset': this.get(
-            'auth.confirm-email.redirect.password-reset',
-          ),
+          'password-reset': this.get('auth.confirm-email.redirect.password-reset'),
         },
       },
       [TokenType.PASSWORD_RESET]: {
@@ -153,9 +151,7 @@ export class ApiConfigService {
       path.join(__dirname, `../../modules/**/*.entity{.ts,.js}`),
       path.join(__dirname, `../../modules/**/*.view-entity{.ts,.js}`),
     ];
-    const migrations = [
-      path.join(__dirname, `../../database/migrations/*{.ts,.js}`),
-    ];
+    const migrations = [path.join(__dirname, `../../database/migrations/*{.ts,.js}`)];
 
     // const subscribers = [
     //   path.join(__dirname, '../../modules/**/*.subscriber{.ts,.js}'),

@@ -1,10 +1,7 @@
 import type { ValidationOptions } from 'class-validator';
 import { registerDecorator } from 'class-validator';
 
-export function SameAs(
-  property: string,
-  validationOptions?: ValidationOptions,
-): PropertyDecorator {
+export function SameAs(property: string, validationOptions?: ValidationOptions): PropertyDecorator {
   return function (object, propertyName: string | symbol) {
     registerDecorator({
       name: 'sameAs',

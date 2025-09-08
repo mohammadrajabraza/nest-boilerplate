@@ -12,10 +12,10 @@ import errorMessage from '@/constants/error-message';
 import { TokenService } from '@/modules/token/token.service';
 
 @Injectable()
-export class JwtRefreshStrategy extends PassportStrategy<
-  typeof Strategy,
-  RefreshPayload
->(Strategy, StrategyName.JWT_REFRESH) {
+export class JwtRefreshStrategy extends PassportStrategy<typeof Strategy, RefreshPayload>(
+  Strategy,
+  StrategyName.JWT_REFRESH,
+) {
   constructor(
     private apiConfigService: ApiConfigService,
     private userService: UserService,

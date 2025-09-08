@@ -1,10 +1,5 @@
 import { RoleType } from '@/constants/role-type';
-import {
-  EmailField,
-  EnumField,
-  PasswordField,
-  StringFieldOptional,
-} from '@/decorators/field.decorator';
+import { EmailField, EnumField, PasswordField, StringFieldOptional } from '@/decorators/field.decorator';
 
 export class EmailLoginBodyDto {
   @EmailField({ swagger: true })

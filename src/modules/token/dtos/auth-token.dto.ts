@@ -1,8 +1,4 @@
-import {
-  ClassField,
-  DateField,
-  StringField,
-} from '@/decorators/field.decorator';
+import { ClassField, DateField, StringField } from '@/decorators/field.decorator';
 
 export class TokenPayload {
   @StringField({ swagger: true })

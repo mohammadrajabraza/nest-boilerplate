@@ -14,11 +14,7 @@ import { JwtService } from '@nestjs/jwt';
 import entities from '@/database/entities';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature(entities),
-    forwardRef(() => SharedModule),
-    forwardRef(() => RoleModule),
-  ],
+  imports: [TypeOrmModule.forFeature(entities), forwardRef(() => SharedModule), forwardRef(() => RoleModule)],
   controllers: [UserController],
   providers: [
     UserService,

@@ -25,9 +25,7 @@ export class RoleSeedService {
         where: { name: data.name },
       });
       if (roleExists) {
-        return await this.repository.save(
-          plainToInstance(RoleEntity, { ...roleExists, ...data }),
-        );
+        return await this.repository.save(plainToInstance(RoleEntity, { ...roleExists, ...data }));
       }
       const role = plainToInstance(RoleEntity, data);
       return await this.repository.save(role);

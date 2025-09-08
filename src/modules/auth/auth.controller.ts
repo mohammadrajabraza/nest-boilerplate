@@ -87,8 +87,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'User login',
-    description:
-      'Authenticate user with email and password, returns user info with access token',
+    description: 'Authenticate user with email and password, returns user info with access token',
   })
   @ApiOkResponse({
     type: EmailLoginResponseDto,
@@ -156,13 +155,9 @@ export class AuthController {
   async verifyEmail(@Query() query: EmailVerifyQueryDto) {
     const { redirect } = this.apiConfigService.authConfig['confirm-email'];
     try {
-      const payload = await this.tokenService.verifyConfirmEmailToken(
-        query.token,
-      );
+      const payload = await this.tokenService.verifyConfirmEmailToken(query.token);
 
-      const { userProfileSetting } = await this.authService.verifyEmail(
-        payload.userId,
-      );
+      const { userProfileSetting } = await this.authService.verifyEmail(payload.userId);
       if (!userProfileSetting.isPasswordReset) {
         return { url: redirect['password-reset'] };
       }
@@ -184,11 +179,7 @@ export class AuthController {
     type: BaseResponseMixin(class {}),
   })
   verifyEmailSuccess() {
-    return new (BaseResponseMixin(class {}))(
-      {},
-      'Email verified',
-      HttpStatus.OK,
-    );
+    return new (BaseResponseMixin(class {}))({}, 'Email verified', HttpStatus.OK);
   }
 
   @Public()
@@ -202,11 +193,7 @@ export class AuthController {
   })
   @Get('email/verify/error')
   verifyEmailError() {
-    return new (BaseResponseMixin(class {}))(
-      {},
-      'Email Verification failed!',
-      HttpStatus.OK,
-    );
+    return new (BaseResponseMixin(class {}))({}, 'Email Verification failed!', HttpStatus.OK);
   }
 
   @Public()
@@ -234,11 +221,7 @@ export class AuthController {
       data: { hash: token.token },
     });
 
-    return new EmailResendResponseDto(
-      {},
-      successMessage.AUTH.RESEND,
-      HttpStatus.OK,
-    );
+    return new EmailResendResponseDto({}, successMessage.AUTH.RESEND, HttpStatus.OK);
   }
 
   @Post('/password/forgot')
@@ -266,11 +249,7 @@ export class AuthController {
       data: { hash: token.token, tokenExpires: token.expiresIn },
     });
 
-    return new ForgotPasswordResponseDto(
-      {},
-      successMessage.AUTH.FORGOT_PASSWORD,
-      HttpStatus.OK,
-    );
+    return new ForgotPasswordResponseDto({}, successMessage.AUTH.FORGOT_PASSWORD, HttpStatus.OK);
   }
 
   @Post('/password/reset')
@@ -289,25 +268,12 @@ export class AuthController {
   })
   @ApiQuery({ name: 'token', type: String })
   @ApiBody({ type: ResetPasswordBodyDto })
-  async resetPassword(
-    @Query() query: ResetPasswordQueryDto,
-    @Body() body: ResetPasswordBodyDto,
-  ) {
-    const payload = await this.tokenService.verifyPasswordResetToken(
-      query.token,
-    );
+  async resetPassword(@Query() query: ResetPasswordQueryDto, @Body() body: ResetPasswordBodyDto) {
+    const payload = await this.tokenService.verifyPasswordResetToken(query.token);
 
-    await this.authService.resetPassword(
-      payload.userId,
-      body.password,
-      body.shouldLogoutAllSessions,
-    );
+    await this.authService.resetPassword(payload.userId, body.password, body.shouldLogoutAllSessions);
 
-    return new ResetPasswordResponseDto(
-      {},
-      successMessage.AUTH.RESET_PASSWORD,
-      HttpStatus.OK,
-    );
+    return new ResetPasswordResponseDto({}, successMessage.AUTH.RESET_PASSWORD, HttpStatus.OK);
   }
 
   @Post('/password/change')
@@ -326,20 +292,9 @@ export class AuthController {
   })
   @ApiBearerAuth()
   @ApiBody({ type: ChangePasswordBodyDto })
-  async changePassword(
-    @Body() body: ChangePasswordBodyDto,
-    @CurrentUser() user: UserDto,
-  ) {
-    await this.authService.changePassword(
-      user.id,
-      body.password,
-      body.shouldLogoutAllSessions,
-    );
-    return new ChangePasswordResponseDto(
-      {},
-      successMessage.AUTH.CHANGE_PASSWORD,
-      HttpStatus.OK,
-    );
+  async changePassword(@Body() body: ChangePasswordBodyDto, @CurrentUser() user: UserDto) {
+    await this.authService.changePassword(user.id, body.password, body.shouldLogoutAllSessions);
+    return new ChangePasswordResponseDto({}, successMessage.AUTH.CHANGE_PASSWORD, HttpStatus.OK);
   }
 
   @Get('/me')
@@ -358,11 +313,7 @@ export class AuthController {
     type: GetMeResponseDto,
   })
   getMe(@CurrentUser() user: UserDto) {
-    return new GetMeResponseDto(
-      user,
-      successMessage.AUTH.GET_ME,
-      HttpStatus.OK,
-    );
+    return new GetMeResponseDto(user, successMessage.AUTH.GET_ME, HttpStatus.OK);
   }
 
   @Public()
@@ -393,11 +344,7 @@ export class AuthController {
     @CurrentSession() session: SessionDto,
     @CurrentToken() refreshToken: TokenDto,
   ) {
-    const tokens = await this.authService.refreshSession(
-      { userId: user.id, role: user.role },
-      session,
-      body,
-    );
+    const tokens = await this.authService.refreshSession({ userId: user.id, role: user.role }, session, body);
 
     await this.tokenService.revokeToken(refreshToken);
 
@@ -487,10 +434,7 @@ export class AuthController {
   @ApiQuery({ name: 'access', type: String })
   @ApiQuery({ name: 'refresh', type: String })
   @ApiOkResponse({})
-  async googleSuccess(
-    @Query('access') accessToken: string,
-    @Query('refresh') refreshToken: string,
-  ) {
+  async googleSuccess(@Query('access') accessToken: string, @Query('refresh') refreshToken: string) {
     const session = await this.authService.checkSession({
       accessToken,
       refreshToken,
@@ -524,8 +468,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Terminate all sessions for a user (Admin only)',
-    description:
-      'Terminate all active sessions for a specific user. Only admins can use this endpoint.',
+    description: 'Terminate all active sessions for a specific user. Only admins can use this endpoint.',
   })
   @ApiOkResponse({
     type: TerminateUserSessionsResponseDto,
@@ -537,10 +480,6 @@ export class AuthController {
     // @CurrentUser() adminUser: UserDto,
   ) {
     await this.authService.terminateAllUserSessions(body.userId as Uuid);
-    return new TerminateUserSessionsResponseDto(
-      {},
-      successMessage.AUTH.TERMINATE_USER_SESSIONS,
-      HttpStatus.OK,
-    );
+    return new TerminateUserSessionsResponseDto({}, successMessage.AUTH.TERMINATE_USER_SESSIONS, HttpStatus.OK);
   }
 }

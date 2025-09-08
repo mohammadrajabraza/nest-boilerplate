@@ -3,13 +3,11 @@ import {
   IsPhoneNumber as isPhoneNumber,
   registerDecorator,
   ValidateIf,
-  ValidationArguments,
+  type ValidationArguments,
 } from 'class-validator';
 import _ from 'lodash';
 
-export function IsPassword(
-  validationOptions?: ValidationOptions,
-): PropertyDecorator {
+export function IsPassword(validationOptions?: ValidationOptions): PropertyDecorator {
   return (object, propertyName) => {
     registerDecorator({
       propertyName: propertyName as string,
@@ -37,9 +35,7 @@ export function IsPhoneNumber(
   });
 }
 
-export function IsTmpKey(
-  validationOptions?: ValidationOptions,
-): PropertyDecorator {
+export function IsTmpKey(validationOptions?: ValidationOptions): PropertyDecorator {
   return (object, propertyName) => {
     registerDecorator({
       propertyName: propertyName as string,

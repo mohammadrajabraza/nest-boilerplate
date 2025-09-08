@@ -6,9 +6,7 @@ import type { Response } from 'express';
 import _ from 'lodash';
 
 @Catch(UnprocessableEntityException)
-export class BadRequestFilter
-  implements ExceptionFilter<UnprocessableEntityException>
-{
+export class BadRequestFilter implements ExceptionFilter<UnprocessableEntityException> {
   constructor(public reflector: Reflector) {}
 
   catch(exception: UnprocessableEntityException, host: ArgumentsHost): void {
@@ -45,9 +43,7 @@ export class BadRequestFilter
         // convert default messages
         if (!constraint) {
           // convert error message to error.fields.{key} syntax for i18n translation
-          constraints[constraintKey] = `error.fields.${_.snakeCase(
-            constraintKey,
-          )}`;
+          constraints[constraintKey] = `error.fields.${_.snakeCase(constraintKey)}`;
         }
       }
     }

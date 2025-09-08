@@ -38,27 +38,17 @@ export class AuthService {
   ) {}
 
   async login(data: Pick<EmailLoginBodyDto, 'email' | 'password'>) {
-    const result = await toSafeAsync(
-      this.userService.findOne({ email: data.email }),
-    );
+    const result = await toSafeAsync(this.userService.findOne({ email: data.email }));
     if (!result.success) {
       throw new UnauthorizedException(errorMessage.AUTH.INVALID_CREDENTIALS);
     }
     const user = result.data;
 
-    if (
-      !user.authProviders.includes(AuthProviders.EMAIL) ||
-      user.password === 'invalid'
-    ) {
-      throw new UnauthorizedException(
-        errorMessage.AUTH.CANNOT_LOGIN_WITH_EMAIL,
-      );
+    if (!user.authProviders.includes(AuthProviders.EMAIL) || user.password === 'invalid') {
+      throw new UnauthorizedException(errorMessage.AUTH.CANNOT_LOGIN_WITH_EMAIL);
     }
 
-    const isPasswordMatch = await this.hashingService.compare(
-      data.password,
-      user.password,
-    );
+    const isPasswordMatch = await this.hashingService.compare(data.password, user.password);
 
     if (!isPasswordMatch) {
       throw new UnauthorizedException(errorMessage.AUTH.INVALID_CREDENTIALS);
@@ -73,10 +63,7 @@ export class AuthService {
     return { user, isPasswordReset: settings.isPasswordReset };
   }
 
-  async startSession(
-    payload: Omit<JwtPayload, 'type'>,
-    data: Pick<EmailLoginBodyDto, 'deviceToken' | 'timeZone'>,
-  ) {
+  async startSession(payload: Omit<JwtPayload, 'type'>, data: Pick<EmailLoginBodyDto, 'deviceToken' | 'timeZone'>) {
     const [access, refresh] = await Promise.all([
       this.tokenService.signAccessToken({ ...payload, type: TokenType.ACCESS }),
       this.tokenService.signRefreshToken({
@@ -126,11 +113,7 @@ export class AuthService {
     }
   }
 
-  async refreshSession(
-    payload: Omit<JwtPayload, 'type'>,
-    session: SessionDto,
-    body: RefreshTokenBody,
-  ) {
+  async refreshSession(payload: Omit<JwtPayload, 'type'>, session: SessionDto, body: RefreshTokenBody) {
     const [access, refresh] = await Promise.all([
       this.tokenService.signAccessToken({ ...payload, type: TokenType.ACCESS }),
       this.tokenService.signRefreshToken({
@@ -188,12 +171,9 @@ export class AuthService {
     if (isVerified) {
       throw new ForbiddenException(errorMessage.AUTH.EMAIL_ALREADY_VERIFIED);
     }
-    const userProfileSetting = await this.userService.updateUserProfileSetting(
-      userId,
-      {
-        isEmailVerified: true,
-      },
-    );
+    const userProfileSetting = await this.userService.updateUserProfileSetting(userId, {
+      isEmailVerified: true,
+    });
     return { user, userProfileSetting };
   }
 
@@ -223,11 +203,7 @@ export class AuthService {
     } as PassowrdResetPayload;
   }
 
-  async resetPassword(
-    userId: Uuid,
-    password: string,
-    shouldLogoutAllSessions: boolean = false,
-  ) {
+  async resetPassword(userId: Uuid, password: string, shouldLogoutAllSessions: boolean = false) {
     const user = await this.userService.findOne({ id: userId });
 
     await this.userService.updateUser(user.id, {
@@ -244,11 +220,7 @@ export class AuthService {
     }
   }
 
-  async changePassword(
-    userId: Uuid,
-    password: string,
-    shouldLogoutAllSessions: boolean = false,
-  ) {
+  async changePassword(userId: Uuid, password: string, shouldLogoutAllSessions: boolean = false) {
     const user = await this.userService.findOne({ id: userId });
 
     await this.userService.updateUser(user.id, {
@@ -276,19 +248,13 @@ export class AuthService {
       const tokenRevocationPromises = activeSessions.map(async (session) => {
         try {
           // Revoke access token
-          const accessToken = await this.tokenService.getToken(
-            session.accessToken,
-            TokenType.ACCESS,
-          );
+          const accessToken = await this.tokenService.getToken(session.accessToken, TokenType.ACCESS);
           if (accessToken) {
             await this.tokenService.revokeToken(accessToken.toDto());
           }
 
           // Revoke refresh token
-          const refreshToken = await this.tokenService.getToken(
-            session.refreshToken,
-            TokenType.REFRESH,
-          );
+          const refreshToken = await this.tokenService.getToken(session.refreshToken, TokenType.REFRESH);
           if (refreshToken) {
             await this.tokenService.revokeToken(refreshToken.toDto());
           }
@@ -303,24 +269,16 @@ export class AuthService {
             },
           );
         } catch (error) {
-          Logger.error(
-            `Error revoking session ${session.id}: ${error.message}`,
-          );
+          Logger.error(`Error revoking session ${session.id}: ${error.message}`);
           // Continue with other sessions even if one fails
         }
       });
 
       await Promise.all(tokenRevocationPromises);
-      Logger.log(
-        `Terminated ${activeSessions.length} active sessions for user ${userId}`,
-      );
+      Logger.log(`Terminated ${activeSessions.length} active sessions for user ${userId}`);
     } catch (error) {
-      Logger.error(
-        `Error terminating all sessions for user ${userId}: ${error.message}`,
-      );
-      throw new InternalServerErrorException(
-        errorMessage.AUTH.TERMINATE_SESSIONS_FAILED,
-      );
+      Logger.error(`Error terminating all sessions for user ${userId}: ${error.message}`);
+      throw new InternalServerErrorException(errorMessage.AUTH.TERMINATE_SESSIONS_FAILED);
     }
   }
 
@@ -330,10 +288,7 @@ export class AuthService {
       this.tokenService.getToken(session.refreshToken, TokenType.REFRESH),
     ]);
 
-    await Promise.all([
-      this.tokenService.revokeToken(access.toDto()),
-      this.tokenService.revokeToken(refresh.toDto()),
-    ]);
+    await Promise.all([this.tokenService.revokeToken(access.toDto()), this.tokenService.revokeToken(refresh.toDto())]);
 
     try {
       await this.sessionRepository.update(
@@ -351,9 +306,7 @@ export class AuthService {
   }
 
   async googleAuth(data: SocialRequest<'google'>['user']) {
-    const result = await toSafeAsync(
-      this.userService.findOne({ email: data.email }),
-    );
+    const result = await toSafeAsync(this.userService.findOne({ email: data.email }));
 
     if (!result.success) {
       const user = await this.userService.create({
@@ -371,18 +324,14 @@ export class AuthService {
 
     if (result.data.authProviders.includes(AuthProviders.GOOGLE)) {
       if (result.data.googleId !== data.providerId.toString()) {
-        throw new UnauthorizedException(
-          errorMessage.AUTH.GOOGLE_ACCOUNT_MISMATCH,
-        );
+        throw new UnauthorizedException(errorMessage.AUTH.GOOGLE_ACCOUNT_MISMATCH);
       }
 
       return result.data;
     }
 
     await this.userService.updateUser(result.data.id, {
-      authProviders: Array.from(
-        new Set([...(result.data.authProviders || []), AuthProviders.GOOGLE]),
-      ),
+      authProviders: Array.from(new Set([...(result.data.authProviders || []), AuthProviders.GOOGLE])),
       googleId: data.providerId.toString(),
       profilePicture: data.picture,
       updatedById: result.data.id,

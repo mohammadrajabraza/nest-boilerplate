@@ -14,6 +14,4 @@ export class LoginResponseDto {
   isPasswordReset: boolean;
 }
 
-export class EmailLoginResponseDto extends BaseResponseMixin(
-  LoginResponseDto,
-) {}
+export class EmailLoginResponseDto extends BaseResponseMixin(LoginResponseDto) {}

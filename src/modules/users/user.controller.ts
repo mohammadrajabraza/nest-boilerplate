@@ -93,10 +93,7 @@ export class UserController {
     status: HttpStatus.CREATED,
   })
   @ApiBearerAuth()
-  async createUser(
-    @Body() body: CreateUserBodyDto,
-    @CurrentUser() admin: UserDto,
-  ) {
+  async createUser(@Body() body: CreateUserBodyDto, @CurrentUser() admin: UserDto) {
     const password = this.generetorService.generateRandomPassword();
     await this.userService.checkUserByEmail(body.email);
 
@@ -104,7 +101,7 @@ export class UserController {
       {
         ...body,
         provider: AuthProviders.EMAIL,
-        password: password,
+        password,
         isPasswordReset: false,
       },
       admin.id,
@@ -125,7 +122,7 @@ export class UserController {
       to: user.email,
       data: {
         hash: token.token,
-        password: password,
+        password,
       },
     });
 
@@ -156,16 +153,8 @@ export class UserController {
     type: UpdateUserBodyDto,
   })
   @ApiBearerAuth()
-  async updateUser(
-    @Param('id') id: string,
-    @Body() body: UpdateUserBodyDto,
-    @CurrentUser() admin: UserDto,
-  ) {
-    const user = await this.userService.updateUserWithRoleAndProfile(
-      id as Uuid,
-      body,
-      admin.id,
-    );
+  async updateUser(@Param('id') id: string, @Body() body: UpdateUserBodyDto, @CurrentUser() admin: UserDto) {
+    const user = await this.userService.updateUserWithRoleAndProfile(id as Uuid, body, admin.id);
     return UserMapper.toDomain(user, 'UPDATE');
   }
 
@@ -177,10 +166,7 @@ export class UserController {
     status: HttpStatus.OK,
   })
   @ApiBearerAuth()
-  async deleteUser(
-    @Param('id') id: string,
-    @CurrentUser() CurrentUser: UserDto,
-  ) {
+  async deleteUser(@Param('id') id: string, @CurrentUser() CurrentUser: UserDto) {
     await this.userService.deleteUser(id as Uuid, CurrentUser.id);
     return UserMapper.toDomain(null, 'DELETE');
   }

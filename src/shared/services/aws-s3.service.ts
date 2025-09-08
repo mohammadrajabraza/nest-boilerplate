@@ -41,7 +41,7 @@ export class AwsS3Service {
 
   async uploadImage(file: IFile): Promise<string> {
     // Validate file, mimetype, and size
-    if (!file || !file.mimetype || !file.buffer) {
+    if (!file?.mimetype || !file.buffer) {
       throw new Error('File, MIME type, or buffer is missing');
     }
 
@@ -54,8 +54,7 @@ export class AwsS3Service {
     const key = `attachments/${fileName}`;
 
     // Derive ContentType with fallback
-    const contentType =
-      file.mimetype || mime.lookup(fileName) || 'application/octet-stream';
+    const contentType = file.mimetype || mime.lookup(fileName) || 'application/octet-stream';
 
     // Use file.size for ContentLength (size in bytes)
     const contentLength = file.size || file.buffer.length;
@@ -76,11 +75,8 @@ export class AwsS3Service {
     }
   }
 
-  async uploadFileWithKey(
-    file: Express.Multer.File,
-    key: string,
-  ): Promise<void> {
-    if (!file || !file.mimetype || !file.buffer) {
+  async uploadFileWithKey(file: Express.Multer.File, key: string): Promise<void> {
+    if (!file?.mimetype || !file.buffer) {
       throw new Error('File, MIME type, or buffer is missing');
     }
     const contentType = file.mimetype;
@@ -143,9 +139,7 @@ export class AwsS3Service {
           Prefix: prefix,
         }),
       );
-      return (result.Contents || [])
-        .map((obj) => obj.Key || '')
-        .filter(Boolean);
+      return (result.Contents || []).map((obj) => obj.Key || '').filter(Boolean);
     } catch (error) {
       throw new Error(`Failed to list files from S3: ${error.message}`);
     }

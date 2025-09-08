@@ -1,12 +1,10 @@
-import { MigrationInterface, QueryRunner } from 'typeorm';
+import type { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class Initial1753704599564 implements MigrationInterface {
   name = 'Initial1753704599564';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `CREATE TYPE "public"."company_status_enum" AS ENUM('accepted', 'rejected', 'pending')`,
-    );
+    await queryRunner.query(`CREATE TYPE "public"."company_status_enum" AS ENUM('accepted', 'rejected', 'pending')`);
     await queryRunner.query(
       `CREATE TABLE "companies" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "deleted_at" TIMESTAMP WITH TIME ZONE, "created_by_id" uuid, "updated_by_id" uuid, "deleted_by_id" uuid, "name" character varying NOT NULL, "ntn" character varying NOT NULL, "address" character varying NOT NULL, "email" character varying NOT NULL, "phone" character varying NOT NULL, "industry" character varying NOT NULL, "status" "public"."company_status_enum" NOT NULL DEFAULT 'pending', "created_by" uuid, "updated_by" uuid, "deleted_by" uuid, CONSTRAINT "PK_d4bc3e82a314fa9e29f652c2c22" PRIMARY KEY ("id"))`,
     );
@@ -169,138 +167,50 @@ export class Initial1753704599564 implements MigrationInterface {
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `ALTER TABLE "attachments" DROP CONSTRAINT "FK_8dfc7dc6b1b9e29b32e0ef58c0c"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "attachments" DROP CONSTRAINT "FK_70a38fc450d3b433c86b67e69d6"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "auth_audit_logs" DROP CONSTRAINT "user_auth_audit_log_fkey"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "users" DROP CONSTRAINT "FK_021e2c9d9dca9f0885e8d738326"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "users" DROP CONSTRAINT "FK_b75c92ef36f432fe68ec300a7d4"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "users" DROP CONSTRAINT "FK_f32b1cb14a9920477bcfd63df2c"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "users" DROP CONSTRAINT "user_company_fkey"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "users" DROP CONSTRAINT "FK_4241f21b9bb35e82a6217af1aad"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "users" DROP CONSTRAINT "FK_80e310e761f458f272c20ea6add"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "users" DROP CONSTRAINT "FK_1bbd34899b8e74ef2a7f3212806"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "sessions" DROP CONSTRAINT "FK_1883ebace4a695f589c7c905629"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "sessions" DROP CONSTRAINT "FK_b18021756e915d0d31e7aebad17"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "sessions" DROP CONSTRAINT "FK_7a1091a6fc423e6af88ce9b7105"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "sessions" DROP CONSTRAINT "user_session_fkey"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "sessions" DROP CONSTRAINT "FK_19a4a215e7ac3d8965e1de49cc8"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "sessions" DROP CONSTRAINT "FK_0cd5bd2c00a5ffc74c9f55529c1"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "sessions" DROP CONSTRAINT "FK_1ccf045da14e5350b26ee882592"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "profile_settings" DROP CONSTRAINT "FK_8fcc401e4e034ee050b1ac82d31"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "profile_settings" DROP CONSTRAINT "FK_3268cf20859ecc0c09c03cf5d70"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "profile_settings" DROP CONSTRAINT "FK_68bfd5198ae2f78b5198685aef9"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "profile_settings" DROP CONSTRAINT "profile_setting_user_fkey"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "profile_settings" DROP CONSTRAINT "FK_7fbd0a27be6f774ea935b7c3140"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "profile_settings" DROP CONSTRAINT "FK_ddf5030f5f3dbc4438243525220"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "profile_settings" DROP CONSTRAINT "FK_ccf4750af15745f3c88b48832fb"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "user_roles" DROP CONSTRAINT "FK_c8bce92db0a6d8ce74af96c2d51"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "user_roles" DROP CONSTRAINT "FK_84bb5109aa423f699fb79c10854"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "user_roles" DROP CONSTRAINT "FK_947e863084a338ac018f1beab96"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "user_roles" DROP CONSTRAINT "user_roles_user_fkey"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "user_roles" DROP CONSTRAINT "user_roles_role_fkey"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "user_roles" DROP CONSTRAINT "FK_6702f1d04c46077db0f85fcdb3d"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "user_roles" DROP CONSTRAINT "FK_819bb0854b79f6a8b0babf95526"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "user_roles" DROP CONSTRAINT "FK_81ca2776a4fa3eea180545ab895"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "roles" DROP CONSTRAINT "FK_6afbac9a2aa8004821807ed92c8"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "roles" DROP CONSTRAINT "FK_747b580d73db0ad78963d78b076"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "roles" DROP CONSTRAINT "FK_4a39f3095781cdd9d6061afaae5"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "roles" DROP CONSTRAINT "FK_7aab1939c84759090de748731a9"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "roles" DROP CONSTRAINT "FK_42353a3d71b2924e2b384901d7f"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "roles" DROP CONSTRAINT "FK_4a4bff0f02e88cbdf770241ca8f"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "companies" DROP CONSTRAINT "FK_c3c4235d8af94bc206635fe7cbb"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "companies" DROP CONSTRAINT "FK_9991d25b571eb593c19f4208fae"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "companies" DROP CONSTRAINT "FK_ca4df9b8772f1c1a02f3a560555"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "companies" DROP CONSTRAINT "FK_021612df27a9e069dda5b7abb1f"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "companies" DROP CONSTRAINT "FK_39303c6d725941d35191290fc68"`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "companies" DROP CONSTRAINT "FK_747580cfe76ebd751cbcd72b181"`,
-    );
+    await queryRunner.query(`ALTER TABLE "attachments" DROP CONSTRAINT "FK_8dfc7dc6b1b9e29b32e0ef58c0c"`);
+    await queryRunner.query(`ALTER TABLE "attachments" DROP CONSTRAINT "FK_70a38fc450d3b433c86b67e69d6"`);
+    await queryRunner.query(`ALTER TABLE "auth_audit_logs" DROP CONSTRAINT "user_auth_audit_log_fkey"`);
+    await queryRunner.query(`ALTER TABLE "users" DROP CONSTRAINT "FK_021e2c9d9dca9f0885e8d738326"`);
+    await queryRunner.query(`ALTER TABLE "users" DROP CONSTRAINT "FK_b75c92ef36f432fe68ec300a7d4"`);
+    await queryRunner.query(`ALTER TABLE "users" DROP CONSTRAINT "FK_f32b1cb14a9920477bcfd63df2c"`);
+    await queryRunner.query(`ALTER TABLE "users" DROP CONSTRAINT "user_company_fkey"`);
+    await queryRunner.query(`ALTER TABLE "users" DROP CONSTRAINT "FK_4241f21b9bb35e82a6217af1aad"`);
+    await queryRunner.query(`ALTER TABLE "users" DROP CONSTRAINT "FK_80e310e761f458f272c20ea6add"`);
+    await queryRunner.query(`ALTER TABLE "users" DROP CONSTRAINT "FK_1bbd34899b8e74ef2a7f3212806"`);
+    await queryRunner.query(`ALTER TABLE "sessions" DROP CONSTRAINT "FK_1883ebace4a695f589c7c905629"`);
+    await queryRunner.query(`ALTER TABLE "sessions" DROP CONSTRAINT "FK_b18021756e915d0d31e7aebad17"`);
+    await queryRunner.query(`ALTER TABLE "sessions" DROP CONSTRAINT "FK_7a1091a6fc423e6af88ce9b7105"`);
+    await queryRunner.query(`ALTER TABLE "sessions" DROP CONSTRAINT "user_session_fkey"`);
+    await queryRunner.query(`ALTER TABLE "sessions" DROP CONSTRAINT "FK_19a4a215e7ac3d8965e1de49cc8"`);
+    await queryRunner.query(`ALTER TABLE "sessions" DROP CONSTRAINT "FK_0cd5bd2c00a5ffc74c9f55529c1"`);
+    await queryRunner.query(`ALTER TABLE "sessions" DROP CONSTRAINT "FK_1ccf045da14e5350b26ee882592"`);
+    await queryRunner.query(`ALTER TABLE "profile_settings" DROP CONSTRAINT "FK_8fcc401e4e034ee050b1ac82d31"`);
+    await queryRunner.query(`ALTER TABLE "profile_settings" DROP CONSTRAINT "FK_3268cf20859ecc0c09c03cf5d70"`);
+    await queryRunner.query(`ALTER TABLE "profile_settings" DROP CONSTRAINT "FK_68bfd5198ae2f78b5198685aef9"`);
+    await queryRunner.query(`ALTER TABLE "profile_settings" DROP CONSTRAINT "profile_setting_user_fkey"`);
+    await queryRunner.query(`ALTER TABLE "profile_settings" DROP CONSTRAINT "FK_7fbd0a27be6f774ea935b7c3140"`);
+    await queryRunner.query(`ALTER TABLE "profile_settings" DROP CONSTRAINT "FK_ddf5030f5f3dbc4438243525220"`);
+    await queryRunner.query(`ALTER TABLE "profile_settings" DROP CONSTRAINT "FK_ccf4750af15745f3c88b48832fb"`);
+    await queryRunner.query(`ALTER TABLE "user_roles" DROP CONSTRAINT "FK_c8bce92db0a6d8ce74af96c2d51"`);
+    await queryRunner.query(`ALTER TABLE "user_roles" DROP CONSTRAINT "FK_84bb5109aa423f699fb79c10854"`);
+    await queryRunner.query(`ALTER TABLE "user_roles" DROP CONSTRAINT "FK_947e863084a338ac018f1beab96"`);
+    await queryRunner.query(`ALTER TABLE "user_roles" DROP CONSTRAINT "user_roles_user_fkey"`);
+    await queryRunner.query(`ALTER TABLE "user_roles" DROP CONSTRAINT "user_roles_role_fkey"`);
+    await queryRunner.query(`ALTER TABLE "user_roles" DROP CONSTRAINT "FK_6702f1d04c46077db0f85fcdb3d"`);
+    await queryRunner.query(`ALTER TABLE "user_roles" DROP CONSTRAINT "FK_819bb0854b79f6a8b0babf95526"`);
+    await queryRunner.query(`ALTER TABLE "user_roles" DROP CONSTRAINT "FK_81ca2776a4fa3eea180545ab895"`);
+    await queryRunner.query(`ALTER TABLE "roles" DROP CONSTRAINT "FK_6afbac9a2aa8004821807ed92c8"`);
+    await queryRunner.query(`ALTER TABLE "roles" DROP CONSTRAINT "FK_747b580d73db0ad78963d78b076"`);
+    await queryRunner.query(`ALTER TABLE "roles" DROP CONSTRAINT "FK_4a39f3095781cdd9d6061afaae5"`);
+    await queryRunner.query(`ALTER TABLE "roles" DROP CONSTRAINT "FK_7aab1939c84759090de748731a9"`);
+    await queryRunner.query(`ALTER TABLE "roles" DROP CONSTRAINT "FK_42353a3d71b2924e2b384901d7f"`);
+    await queryRunner.query(`ALTER TABLE "roles" DROP CONSTRAINT "FK_4a4bff0f02e88cbdf770241ca8f"`);
+    await queryRunner.query(`ALTER TABLE "companies" DROP CONSTRAINT "FK_c3c4235d8af94bc206635fe7cbb"`);
+    await queryRunner.query(`ALTER TABLE "companies" DROP CONSTRAINT "FK_9991d25b571eb593c19f4208fae"`);
+    await queryRunner.query(`ALTER TABLE "companies" DROP CONSTRAINT "FK_ca4df9b8772f1c1a02f3a560555"`);
+    await queryRunner.query(`ALTER TABLE "companies" DROP CONSTRAINT "FK_021612df27a9e069dda5b7abb1f"`);
+    await queryRunner.query(`ALTER TABLE "companies" DROP CONSTRAINT "FK_39303c6d725941d35191290fc68"`);
+    await queryRunner.query(`ALTER TABLE "companies" DROP CONSTRAINT "FK_747580cfe76ebd751cbcd72b181"`);
     await queryRunner.query(`DROP TABLE "attachments"`);
     await queryRunner.query(`DROP TABLE "tokens"`);
     await queryRunner.query(`DROP TABLE "auth_audit_logs"`);

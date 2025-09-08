@@ -1,10 +1,8 @@
 // current-user.decorator.ts
-import { CustomRequest } from '@/types/jwt';
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import type { CustomRequest } from '@/types/jwt';
+import { createParamDecorator, type ExecutionContext } from '@nestjs/common';
 
-export const CurrentUser = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest<CustomRequest>();
-    return request.user.user;
-  },
-);
+export const CurrentUser = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
+  const request = ctx.switchToHttp().getRequest<CustomRequest>();
+  return request.user.user;
+});

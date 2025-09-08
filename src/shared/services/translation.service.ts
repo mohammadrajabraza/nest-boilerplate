@@ -24,12 +24,13 @@ export class TranslationService {
     await Promise.all(
       _.map(dto, async (value, key) => {
         if (_.isString(value)) {
-          const translateDec: ITranslationDecoratorInterface | undefined =
-            Reflect.getMetadata(STATIC_TRANSLATION_DECORATOR_KEY, dto, key);
+          const translateDec: ITranslationDecoratorInterface | undefined = Reflect.getMetadata(
+            STATIC_TRANSLATION_DECORATOR_KEY,
+            dto,
+            key,
+          );
           if (translateDec) {
-            const translated = await this.translate(
-              `${translateDec.translationKey ?? key}.${value}`,
-            );
+            const translated = await this.translate(`${translateDec.translationKey ?? key}.${value}`);
             dto[key] = translated;
           }
           return;

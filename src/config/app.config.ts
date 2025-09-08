@@ -68,15 +68,11 @@ const transformAppPort = (value: string | null) => {
   // Handle both strings and numbers
   const stringValue = String(value).trim();
   if (!/^\d+$/.test(stringValue)) {
-    throw new Error(
-      `APP_PORT must be a valid integer, received: "${stringValue}"`,
-    );
+    throw new Error(`APP_PORT must be a valid integer, received: "${stringValue}"`);
   }
   const parsed = parseInt(stringValue, 10);
   if (isNaN(parsed) || parsed < 0 || parsed > 65535) {
-    throw new Error(
-      `APP_PORT must be between 0 and 65535, received: ${parsed}`,
-    );
+    throw new Error(`APP_PORT must be between 0 and 65535, received: ${parsed}`);
   }
   return parsed;
 };
@@ -114,18 +110,13 @@ export default registerAs<AppConfig>('app', () => {
     workingDirectory: process.env.PWD || process.cwd(),
     frontendDomain: config.FRONTEND_DOMAIN,
     backendDomain: config.BACKEND_DOMAIN ?? 'http://localhost',
-    port:
-      transformAppPort(config.APP_PORT) ??
-      (process.env.PORT ? parseInt(process.env.PORT, 10) : 3000),
+    port: transformAppPort(config.APP_PORT) ?? (process.env.PORT ? parseInt(process.env.PORT, 10) : 3000),
     apiPrefix: config.API_PREFIX || 'api',
     fallbackLanguage: config.APP_FALLBACK_LANGUAGE || 'en',
     headerLanguage: config.APP_HEADER_LANGUAGE || 'x-custom-lang',
     throttler: {
       ttl: transformThrollerTTl(config.THROTTLER_TTL),
-      limit:
-        config.THROTTLER_LIMIT && !isNaN(Number(config.THROTTLER_LIMIT))
-          ? Number(config.THROTTLER_LIMIT)
-          : 0,
+      limit: config.THROTTLER_LIMIT && !isNaN(Number(config.THROTTLER_LIMIT)) ? Number(config.THROTTLER_LIMIT) : 0,
     },
     cors: {
       origins: config.CORS_ORIGINS ? config.CORS_ORIGINS : '*',
@@ -136,9 +127,7 @@ export default registerAs<AppConfig>('app', () => {
         ? config.CORS_ALLOWED_HEADERS
         : ['Content-Type', 'Authorization'].join(','),
       credentials:
-        !config.CORS_CREDENTIALS ||
-        typeof config.CORS_CREDENTIALS === 'undefined' ||
-        config.CORS_CREDENTIALS === null
+        !config.CORS_CREDENTIALS || typeof config.CORS_CREDENTIALS === 'undefined' || config.CORS_CREDENTIALS === null
           ? true
           : config.CORS_CREDENTIALS === 'true',
     },

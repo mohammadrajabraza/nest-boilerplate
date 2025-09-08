@@ -6,22 +6,14 @@ import { StrategyName } from '@/constants/strategy-name';
 import { SocialUser } from '@/types/jwt';
 
 @Injectable()
-export class GoogleOauthStrategy extends PassportStrategy(
-  Strategy,
-  StrategyName.GOOGLE_OAUTH,
-) {
+export class GoogleOauthStrategy extends PassportStrategy(Strategy, StrategyName.GOOGLE_OAUTH) {
   constructor(apiConfigService: ApiConfigService) {
     super({
       ...apiConfigService.googleConfig,
     });
   }
 
-  validate(
-    _accessToken: string,
-    _refreshToken: string,
-    profile: any,
-    done: VerifyCallback,
-  ): any {
+  validate(_accessToken: string, _refreshToken: string, profile: any, done: VerifyCallback): any {
     const { id, name, emails, photos } = profile;
     const user = {
       provider: 'google',

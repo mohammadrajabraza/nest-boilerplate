@@ -1,10 +1,4 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { UseDto } from '@/decorators/use-dto.decorator';
 import { TokenDto } from '@/modules/token/domain/token.dto';
 import { TokenType } from '@/constants/token-type';

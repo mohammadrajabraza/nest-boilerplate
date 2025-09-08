@@ -1,9 +1,5 @@
 import { InjectDataSource } from '@nestjs/typeorm';
-import type {
-  ValidationArguments,
-  ValidationOptions,
-  ValidatorConstraintInterface,
-} from 'class-validator';
+import type { ValidationArguments, ValidationOptions, ValidatorConstraintInterface } from 'class-validator';
 import { registerDecorator, ValidatorConstraint } from 'class-validator';
 import type { EntitySchema, FindOptionsWhere, ObjectType } from 'typeorm';
 import { DataSource } from 'typeorm';
@@ -15,10 +11,7 @@ import { DataSource } from 'typeorm';
 export class UniqueValidator implements ValidatorConstraintInterface {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
-  public async validate<E>(
-    _value: string,
-    args: IUniqueValidationArguments<E>,
-  ): Promise<boolean> {
+  public async validate<E>(_value: string, args: IUniqueValidationArguments<E>): Promise<boolean> {
     const [entityClass, findCondition] = args.constraints;
 
     return (

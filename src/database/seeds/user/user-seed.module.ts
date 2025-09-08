@@ -9,15 +9,7 @@ import { UserRoleEntity } from '@/modules/roles/infrastructure/persistence/entit
 import { ProfileSettingEntity } from '@/modules/users/infrastructure/persistence/entities/profile-setting.entity';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      UserEntity,
-      RoleEntity,
-      CompanyEntity,
-      UserRoleEntity,
-      ProfileSettingEntity,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([UserEntity, RoleEntity, CompanyEntity, UserRoleEntity, ProfileSettingEntity])],
   providers: [UserSeedService],
   exports: [UserSeedService],
 })

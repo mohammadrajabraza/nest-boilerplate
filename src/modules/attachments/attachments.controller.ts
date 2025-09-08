@@ -17,13 +17,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { ImageValidationPipe } from './pipes/image-validation.pipe';
 import { DocumentValidationPipe } from './pipes/document-validation.pipe';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiBody,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { AttachmentResponseDto } from './dtos/response/attachment.dto';
 import { ListAttachmentDto } from './dtos/response/list-attachment.dto';
 import { AttachmentQueryDto } from './dtos/query/attachment-query.dto';
@@ -133,8 +127,7 @@ export class AttachmentsController {
   @ApiResponse({
     status: HttpStatus.OK,
     type: ListAttachmentDto,
-    description:
-      'Returns a paginated list of attachments for the specified parameters.',
+    description: 'Returns a paginated list of attachments for the specified parameters.',
   })
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
@@ -164,8 +157,7 @@ export class AttachmentsController {
   @Get('/:id')
   @ApiOperation({
     summary: 'Download an attachment by ID',
-    description:
-      'Downloads the attachment file by its unique ID. Only authorized users can access.',
+    description: 'Downloads the attachment file by its unique ID. Only authorized users can access.',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -175,8 +167,7 @@ export class AttachmentsController {
   @ApiBearerAuth()
   @Roles(RoleType.ADMIN, RoleType.USER)
   async downloadAttachmentById(@Param('id') id: Uuid, @Res() res: Response) {
-    const { stream, fileName, mimeType } =
-      await this.attachmentsService.downloadById(id);
+    const { stream, fileName, mimeType } = await this.attachmentsService.downloadById(id);
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
     res.setHeader('Content-Type', mimeType);
     stream.pipe(res);
@@ -185,8 +176,7 @@ export class AttachmentsController {
   @Delete('/:id')
   @ApiOperation({
     summary: 'Delete an attachment by ID',
-    description:
-      'Deletes the attachment and its file from S3 by its unique ID. Only authorized users can delete.',
+    description: 'Deletes the attachment and its file from S3 by its unique ID. Only authorized users can delete.',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -195,10 +185,7 @@ export class AttachmentsController {
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @Roles(RoleType.ADMIN, RoleType.USER)
-  async deleteAttachmentById(
-    @Param('id') id: string,
-    @CurrentUser() currentUser: UserDto,
-  ) {
+  async deleteAttachmentById(@Param('id') id: string, @CurrentUser() currentUser: UserDto) {
     await this.attachmentsService.deleteById(id, currentUser.id);
     return { message: SuccessMessage.ATTACHMENT.DELETE };
   }

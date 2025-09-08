@@ -69,10 +69,7 @@ export class RoleService {
       }
 
       if (options?.sort && options?.order) {
-        query.orderBy(
-          `role.${options.sort}`,
-          options.order.toUpperCase() as 'ASC' | 'DESC',
-        );
+        query.orderBy(`role.${options.sort}`, options.order.toUpperCase() as 'ASC' | 'DESC');
       }
 
       return await query.getMany();
@@ -138,14 +135,8 @@ export class RoleService {
     }
 
     try {
-      await this.userRoleRepository.update(
-        { roleId: role.id },
-        { deletedById: deletedBy, deletedAt: new Date() },
-      );
-      await this.roleRepository.update(
-        { id: role.id },
-        { deletedById: deletedBy, deletedAt: new Date() },
-      );
+      await this.userRoleRepository.update({ roleId: role.id }, { deletedById: deletedBy, deletedAt: new Date() });
+      await this.roleRepository.update({ id: role.id }, { deletedById: deletedBy, deletedAt: new Date() });
     } catch (error) {
       Logger.error(error);
       throw new InternalServerErrorException(errorMessage.ROLE.DELETION_FAILED);

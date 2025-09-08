@@ -66,15 +66,11 @@ export class AttachmentsService {
       const saved = await this.attachmentRepository.save(attachment);
       return { id: saved.id, url };
     } catch (error) {
-      throw new Error(
-        ErrorMessage.ATTACHMENT.UPLOAD_FAILED + ': ' + error.message,
-      );
+      throw new Error(`${ErrorMessage.ATTACHMENT.UPLOAD_FAILED}: ${error.message}`);
     }
   }
 
-  async listHierarchical(
-    options: AttachmentQueryDto,
-  ): Promise<AttachmentEntity[]> {
+  async listHierarchical(options: AttachmentQueryDto): Promise<AttachmentEntity[]> {
     try {
       const query = this.attachmentRepository
         .createQueryBuilder('attachment')
@@ -94,10 +90,7 @@ export class AttachmentsService {
 
       // Add search functionality
       if (options.q && typeof options.q === 'string') {
-        query.andWhere(
-          '(attachment.fileName LIKE :q OR attachment.fileType LIKE :q)',
-          { q: `%${options.q}%` },
-        );
+        query.andWhere('(attachment.fileName LIKE :q OR attachment.fileType LIKE :q)', { q: `%${options.q}%` });
       }
 
       // Add pagination
@@ -111,10 +104,7 @@ export class AttachmentsService {
 
       // Add sorting
       if (options.order) {
-        query.orderBy(
-          'attachment.uploadedAt',
-          options.order.toUpperCase() as 'ASC' | 'DESC',
-        );
+        query.orderBy('attachment.uploadedAt', options.order.toUpperCase() as 'ASC' | 'DESC');
       } else {
         query.orderBy('attachment.uploadedAt', 'DESC'); // Default to newest first
       }
@@ -122,9 +112,7 @@ export class AttachmentsService {
       const attachments = await query.getMany();
       return attachments;
     } catch (error) {
-      throw new Error(
-        ErrorMessage.ATTACHMENT.LIST_FAILED + ': ' + error.message,
-      );
+      throw new Error(`${ErrorMessage.ATTACHMENT.LIST_FAILED}: ${error.message}`);
     }
   }
 
@@ -148,24 +136,17 @@ export class AttachmentsService {
 
       // Add search functionality
       if (options.q && typeof options.q === 'string') {
-        query.andWhere(
-          '(attachment.fileName LIKE :q OR attachment.fileType LIKE :q)',
-          { q: `%${options.q}%` },
-        );
+        query.andWhere('(attachment.fileName LIKE :q OR attachment.fileType LIKE :q)', { q: `%${options.q}%` });
       }
 
       const count = await query.getCount();
       return count;
     } catch (error) {
-      throw new Error(
-        ErrorMessage.ATTACHMENT.LIST_FAILED + ': ' + error.message,
-      );
+      throw new Error(`${ErrorMessage.ATTACHMENT.LIST_FAILED}: ${error.message}`);
     }
   }
 
-  async downloadById(
-    id: Uuid,
-  ): Promise<{ stream: Readable; fileName: string; mimeType: string }> {
+  async downloadById(id: Uuid): Promise<{ stream: Readable; fileName: string; mimeType: string }> {
     const attachment = await this.attachmentRepository.findOne({
       where: { id },
     });
@@ -173,9 +154,7 @@ export class AttachmentsService {
       throw new Error(ErrorMessage.ATTACHMENT.NOT_FOUND);
     }
     // TODO: Add permission check here
-    const { fileBuffer, contentType } = await this.awsS3Service.getFileBuffer(
-      attachment.key,
-    );
+    const { fileBuffer, contentType } = await this.awsS3Service.getFileBuffer(attachment.key);
     const stream = Readable.from(fileBuffer);
     return { stream, fileName: attachment.fileName, mimeType: contentType };
   }
@@ -195,11 +174,7 @@ export class AttachmentsService {
     });
   }
 
-  async getAttachmentsForEntity(
-    entityType: string,
-    entityId: Uuid,
-    tenantId: Uuid,
-  ): Promise<AttachmentEntity[]> {
+  async getAttachmentsForEntity(entityType: string, entityId: Uuid, tenantId: Uuid): Promise<AttachmentEntity[]> {
     try {
       const attachments = await this.attachmentRepository.find({
         where: {
@@ -214,9 +189,7 @@ export class AttachmentsService {
       });
       return attachments;
     } catch (error) {
-      throw new Error(
-        ErrorMessage.ATTACHMENT.LIST_FAILED + ': ' + error.message,
-      );
+      throw new Error(`${ErrorMessage.ATTACHMENT.LIST_FAILED}: ${error.message}`);
     }
   }
 }

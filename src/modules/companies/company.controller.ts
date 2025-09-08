@@ -1,15 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Post,
-  Put,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { CompanyService } from './company.service';
 import { RoleType } from '@/constants/role-type';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
@@ -38,10 +27,7 @@ export class CompanyController {
     type: CompanyResponseDto,
   })
   @ApiBearerAuth()
-  async createCompany(
-    @Body() body: CreateCompanyBodyDto,
-    @CurrentUser() admin: UserDto,
-  ) {
+  async createCompany(@Body() body: CreateCompanyBodyDto, @CurrentUser() admin: UserDto) {
     const company = await this.companyService.createCompany(body, admin.id);
     return CompanyMapper.toDomain(company, 'CREATE');
   }
@@ -83,10 +69,7 @@ export class CompanyController {
     type: CompanyResponseDto,
   })
   @ApiBearerAuth()
-  async getCompanyById(
-    @Param('id') id: string,
-    @Query() query: GetCompanyByIdQueryDto,
-  ) {
+  async getCompanyById(@Param('id') id: string, @Query() query: GetCompanyByIdQueryDto) {
     const company = await this.companyService.getCompanyById(id as Uuid, query);
     return CompanyMapper.toDomain(company, 'GET');
   }
@@ -98,11 +81,7 @@ export class CompanyController {
     type: CompanyResponseDto,
   })
   @ApiBearerAuth()
-  async updateRole(
-    @Param('id') id: string,
-    @Body() body: UpdateCompanyBodyDto,
-    @CurrentUser() admin: UserDto,
-  ) {
+  async updateRole(@Param('id') id: string, @Body() body: UpdateCompanyBodyDto, @CurrentUser() admin: UserDto) {
     console.log(id);
     const company = await this.companyService.updateCompany(id, body, admin.id);
     return CompanyMapper.toDomain(company, 'UPDATE');

@@ -1,8 +1,8 @@
 import type { AbstractDto } from './common/dto/abstract.dto';
 import type { LanguageCode } from './constants/language-code';
-import { CreateTranslationDto } from './common/dto/create-translation.dto';
-import { PageMetaDto } from './common/dto/page-meta.dto';
-import { PageDto } from './common/dto/page.dto';
+import type { CreateTranslationDto } from './common/dto/create-translation.dto';
+import type { PageMetaDto } from './common/dto/page-meta.dto';
+import type { PageDto } from './common/dto/page.dto';
 
 declare global {
   export type Uuid = string & { _uuidBrand: undefined };
@@ -12,10 +12,7 @@ declare global {
   interface Array<T> {
     toDtos<Dto extends AbstractDto>(this: T[], options?: unknown): Dto[];
 
-    getByLanguage(
-      this: CreateTranslationDto[],
-      languageCode: LanguageCode,
-    ): string;
+    getByLanguage(this: CreateTranslationDto[], languageCode: LanguageCode): string;
 
     toPageDto(
       this: T[],

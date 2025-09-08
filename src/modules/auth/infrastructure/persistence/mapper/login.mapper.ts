@@ -1,14 +1,8 @@
-import { RoleType } from '@/constants/role-type';
+import type { RoleType } from '@/constants/role-type';
 import successMessage from '@/constants/success-message';
-import {
-  EmailLoginResponseDto,
-  LoginResponseDto,
-} from '@/modules/auth/dtos/response/email-login.dto';
-import {
-  AuthTokenResponseDto,
-  TokenPayload,
-} from '@/modules/token/dtos/auth-token.dto';
-import { UserEntity } from '@/modules/users/infrastructure/persistence/entities/user.entity';
+import { EmailLoginResponseDto, LoginResponseDto } from '@/modules/auth/dtos/response/email-login.dto';
+import { AuthTokenResponseDto, TokenPayload } from '@/modules/token/dtos/auth-token.dto';
+import type { UserEntity } from '@/modules/users/infrastructure/persistence/entities/user.entity';
 import { HttpStatus } from '@nestjs/common';
 
 export class LoginMapper {
@@ -25,9 +19,7 @@ export class LoginMapper {
     tokensDto.access.token = tokens.access.token;
 
     const accessExpiresIn = new Date();
-    accessExpiresIn.setMilliseconds(
-      accessExpiresIn.getMilliseconds() + tokens.access.expiresIn,
-    );
+    accessExpiresIn.setMilliseconds(accessExpiresIn.getMilliseconds() + tokens.access.expiresIn);
 
     tokensDto.access.expiresIn = accessExpiresIn;
 
@@ -35,9 +27,7 @@ export class LoginMapper {
     tokensDto.refresh.token = tokens.refresh.token;
 
     const refreshExpiresIn = new Date();
-    refreshExpiresIn.setMilliseconds(
-      refreshExpiresIn.getMilliseconds() + tokens.refresh.expiresIn,
-    );
+    refreshExpiresIn.setMilliseconds(refreshExpiresIn.getMilliseconds() + tokens.refresh.expiresIn);
 
     tokensDto.refresh.expiresIn = refreshExpiresIn;
 
@@ -46,11 +36,7 @@ export class LoginMapper {
     data.tokens = tokensDto;
     data.isPasswordReset = isPasswordReset;
 
-    return new EmailLoginResponseDto(
-      data,
-      successMessage.AUTH.LOGIN,
-      HttpStatus.OK,
-    );
+    return new EmailLoginResponseDto(data, successMessage.AUTH.LOGIN, HttpStatus.OK);
   }
 
   static toPersistence() {}

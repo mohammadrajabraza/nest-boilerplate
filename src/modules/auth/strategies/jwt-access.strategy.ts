@@ -12,10 +12,10 @@ import { AccessPayload, JwtPayload } from '@/types/jwt';
 import { TokenService } from '@/modules/token/token.service';
 
 @Injectable()
-export class JwtAccessStrategy extends PassportStrategy<
-  typeof Strategy,
-  AccessPayload
->(Strategy, StrategyName.JWT_ACCESS) {
+export class JwtAccessStrategy extends PassportStrategy<typeof Strategy, AccessPayload>(
+  Strategy,
+  StrategyName.JWT_ACCESS,
+) {
   constructor(
     private apiConfigService: ApiConfigService,
     private userService: UserService,
@@ -30,10 +30,7 @@ export class JwtAccessStrategy extends PassportStrategy<
     } as StrategyOptionsWithRequest);
   }
 
-  async validate(
-    req: Request,
-    { payload }: { payload: JwtPayload },
-  ): Promise<AccessPayload> {
+  async validate(req: Request, { payload }: { payload: JwtPayload }): Promise<AccessPayload> {
     const token = req.headers.authorization?.replace('Bearer ', '').trim();
 
     if (!token) {

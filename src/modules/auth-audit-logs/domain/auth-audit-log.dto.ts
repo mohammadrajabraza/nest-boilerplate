@@ -1,10 +1,5 @@
 import { Uuid } from '@/types';
-import {
-  DateField,
-  EnumFieldOptional,
-  StringFieldOptional,
-  UUIDField,
-} from '@/decorators/field.decorator';
+import { DateField, EnumFieldOptional, StringFieldOptional, UUIDField } from '@/decorators/field.decorator';
 import { AuthAuditLogEvent } from '@/constants/auth-audit-log-event';
 import { AuthAuditLogEntity } from '../infrastructure/entities/auth-audit-log.entity';
 

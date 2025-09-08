@@ -27,10 +27,7 @@ import { AuthGuard } from './guards/auth.guard';
 
 async function bootstrap() {
   initializeTransactionalContext();
-  const app = await NestFactory.create<NestExpressApplication>(
-    AppModule,
-    new ExpressAdapter(),
-  );
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, new ExpressAdapter());
   app.enable('trust proxy'); // only if you're behind a reverse proxy (Heroku, Bluemix, AWS ELB, Nginx, etc)
   app.enableVersioning();
 
@@ -48,16 +45,11 @@ async function bootstrap() {
     new RolesGuard(reflector), // Runs second
   );
 
-  app.useGlobalFilters(
-    new BadRequestFilter(reflector),
-    new QueryFailedFilter(reflector),
-  );
+  app.useGlobalFilters(new BadRequestFilter(reflector), new QueryFailedFilter(reflector));
 
   app.useGlobalInterceptors(
     new ClassSerializerInterceptor(reflector),
-    new TranslationInterceptor(
-      app.select(SharedModule).get(TranslationService),
-    ),
+    new TranslationInterceptor(app.select(SharedModule).get(TranslationService)),
   );
 
   app.useGlobalPipes(

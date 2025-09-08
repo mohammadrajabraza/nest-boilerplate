@@ -89,10 +89,7 @@ export class UserService {
 
       // Sorting
       if (options?.sort && options?.order) {
-        query.orderBy(
-          `user.${options.sort}`,
-          options.order.toUpperCase() as 'ASC' | 'DESC',
-        );
+        query.orderBy(`user.${options.sort}`, options.order.toUpperCase() as 'ASC' | 'DESC');
       }
 
       // Pagination
@@ -143,9 +140,7 @@ export class UserService {
     }
   }
 
-  async findOne(
-    payload: Omit<FindOptionsWhere<UserEntity>, 'roleId'> & { role?: RoleType },
-  ) {
+  async findOne(payload: Omit<FindOptionsWhere<UserEntity>, 'roleId'> & { role?: RoleType }) {
     const { role, ...rest } = payload;
     const where: FindOptionsWhere<UserEntity> = rest;
     if (role) {
@@ -182,16 +177,11 @@ export class UserService {
     }
   }
 
-  async updateUserProfileSetting(
-    id: Uuid,
-    data: Partial<{ isEmailVerified: boolean; isPasswordReset: boolean }>,
-  ) {
+  async updateUserProfileSetting(id: Uuid, data: Partial<{ isEmailVerified: boolean; isPasswordReset: boolean }>) {
     const setting = await this.findUserProfileSetting(id);
 
     try {
-      return await this.profileSettingRepository.save(
-        plainToInstance(ProfileSettingEntity, { ...setting, ...data }),
-      );
+      return await this.profileSettingRepository.save(plainToInstance(ProfileSettingEntity, { ...setting, ...data }));
     } catch (error) {
       Logger.error(error);
       throw new InternalServerErrorException(errorMessage.USER.UPDATION_FAILED);
@@ -217,9 +207,7 @@ export class UserService {
 
       if (data.provider === 'google') {
         if (!data.googleId) {
-          throw new BadRequestException(
-            'Google ID is required for Google signup',
-          );
+          throw new BadRequestException('Google ID is required for Google signup');
         }
         userEntity.googleId = data.googleId;
       }
@@ -237,9 +225,7 @@ export class UserService {
       profileSettingEntity.isEmailVerified = false;
       profileSettingEntity.isPhoneVerified = false;
       profileSettingEntity.isPasswordReset =
-        data.isPasswordReset === undefined || data.isPasswordReset === null
-          ? true
-          : data.isPasswordReset;
+        data.isPasswordReset === undefined || data.isPasswordReset === null ? true : data.isPasswordReset;
       profileSettingEntity.userId = user.id;
       profileSettingEntity.createdById = creator;
 
@@ -259,22 +245,20 @@ export class UserService {
   public async findUserProfileSetting(userId: Uuid) {
     try {
       const profileSetting = await this.profileSettingRepository.findOneOrFail({
-        where: { userId: userId },
+        where: { userId },
       });
 
       return profileSetting;
     } catch (error) {
       Logger.error(error);
-      throw new InternalServerErrorException(
-        errorMessage.PROFILE_SETTING.NOT_FOUND,
-      );
+      throw new InternalServerErrorException(errorMessage.PROFILE_SETTING.NOT_FOUND);
     }
   }
 
   public async getUserSettings(userId: Uuid) {
     try {
       const profileSetting = await this.profileSettingRepository.findOneOrFail({
-        where: { userId: userId },
+        where: { userId },
       });
 
       // if (!profileSetting) {
@@ -291,16 +275,14 @@ export class UserService {
       return profileSetting;
     } catch (error) {
       Logger.error(error);
-      throw new InternalServerErrorException(
-        errorMessage.PROFILE_SETTING.NOT_FOUND,
-      );
+      throw new InternalServerErrorException(errorMessage.PROFILE_SETTING.NOT_FOUND);
     }
   }
 
   public async checkIsEmailVerified(userId: Uuid) {
     try {
       const profileSetting = await this.profileSettingRepository.findOneOrFail({
-        where: { userId: userId },
+        where: { userId },
       });
 
       // if (!profileSetting) {
@@ -317,9 +299,7 @@ export class UserService {
       return profileSetting.isEmailVerified;
     } catch (error) {
       Logger.error(error);
-      throw new InternalServerErrorException(
-        errorMessage.PROFILE_SETTING.NOT_FOUND,
-      );
+      throw new InternalServerErrorException(errorMessage.PROFILE_SETTING.NOT_FOUND);
     }
   }
 
@@ -342,19 +322,13 @@ export class UserService {
     }
   }
 
-  async updateUserWithRoleAndProfile(
-    userId: Uuid,
-    data: UpdateUserBodyDto,
-    updatedBy: Uuid,
-  ) {
+  async updateUserWithRoleAndProfile(userId: Uuid, data: UpdateUserBodyDto, updatedBy: Uuid) {
     const existingUser = await this.findOne({ id: userId });
 
     const isEmailChanged = data.email && existingUser.email !== data.email;
 
     if (isEmailChanged) {
-      const userFoundWithEmail = await toSafeAsync(
-        this.findOne({ email: data.email }),
-      );
+      const userFoundWithEmail = await toSafeAsync(this.findOne({ email: data.email }));
       if (userFoundWithEmail.success) {
         throw new BadRequestException('Email is already in use');
       }
@@ -400,18 +374,9 @@ export class UserService {
 
     try {
       // Set deletedBy before soft deleting each entity
-      await this.profileSettingRepository.update(
-        { userId },
-        { deletedById: deletedBy, deletedAt: new Date() },
-      );
-      await this.userRoleRepository.update(
-        { userId },
-        { deletedById: deletedBy, deletedAt: new Date() },
-      );
-      await this.userRepository.update(
-        { id: userId },
-        { deletedById: deletedBy, deletedAt: new Date() },
-      );
+      await this.profileSettingRepository.update({ userId }, { deletedById: deletedBy, deletedAt: new Date() });
+      await this.userRoleRepository.update({ userId }, { deletedById: deletedBy, deletedAt: new Date() });
+      await this.userRepository.update({ id: userId }, { deletedById: deletedBy, deletedAt: new Date() });
     } catch (error) {
       Logger.error(error);
       throw new InternalServerErrorException(errorMessage.USER.DELETION_FAILED);

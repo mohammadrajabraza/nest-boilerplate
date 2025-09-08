@@ -1,5 +1,5 @@
-import { TokenType } from '@/constants/token-type';
-import { Algorithm } from 'jsonwebtoken';
+import type { TokenType } from '@/constants/token-type';
+import type { Algorithm } from 'jsonwebtoken';
 
 export type AppConfig = {
   nodeEnv: string;

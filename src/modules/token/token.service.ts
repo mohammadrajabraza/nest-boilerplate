@@ -1,11 +1,7 @@
 import errorMessage from '@/constants/error-message';
 import { TokenType } from '@/constants/token-type';
 import { ApiConfigService } from '@/shared/services/api-config.service';
-import {
-  ConfirmEmailPayload,
-  JwtPayload,
-  PassowrdResetPayload,
-} from '@/types/jwt';
+import { ConfirmEmailPayload, JwtPayload, PassowrdResetPayload } from '@/types/jwt';
 import {
   HttpException,
   Injectable,
@@ -14,12 +10,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import {
-  JsonWebTokenError,
-  JwtService,
-  NotBeforeError,
-  TokenExpiredError,
-} from '@nestjs/jwt';
+import { JsonWebTokenError, JwtService, NotBeforeError, TokenExpiredError } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TokenEntity } from './infrastructure/persistence/entities/token.entity';
 import { Repository } from 'typeorm';
@@ -59,9 +50,7 @@ export class TokenService {
       );
     } catch (error) {
       Logger.error(error);
-      throw new InternalServerErrorException(
-        errorMessage.TOKEN.CREATION_FAILED,
-      );
+      throw new InternalServerErrorException(errorMessage.TOKEN.CREATION_FAILED);
     }
   }
 
@@ -85,26 +74,21 @@ export class TokenService {
       if (tokenEntity.tokenType !== tokenType) {
         throw new NotFoundException(errorMessage.TOKEN.INVALID_TYPE);
       }
-      if (
-        new Date(tokenEntity.expiresAt).getTime() < new Date().getTime() ||
-        tokenEntity.isRevoked
-      ) {
+      if (new Date(tokenEntity.expiresAt).getTime() < new Date().getTime() || tokenEntity.isRevoked) {
         throw new UnauthorizedException(errorMessage.TOKEN.EXPIRED);
       }
       return tokenEntity;
     } catch (error) {
       Logger.error(error);
       if (error instanceof HttpException) throw error;
-      throw new InternalServerErrorException(
-        errorMessage.TOKEN.GET_TOKEN_FAILED,
-      );
+      throw new InternalServerErrorException(errorMessage.TOKEN.GET_TOKEN_FAILED);
     }
   }
 
-  private async signToken<
-    TPayload extends object & { userId: Uuid },
-    TTokenType extends TokenType,
-  >(payload: TPayload, tokenType: TTokenType) {
+  private async signToken<TPayload extends object & { userId: Uuid }, TTokenType extends TokenType>(
+    payload: TPayload,
+    tokenType: TTokenType,
+  ) {
     try {
       const tokenConfig = this.apiConfigService.authConfig[tokenType];
       const token = this.jwtService.sign(
@@ -146,10 +130,10 @@ export class TokenService {
     return new InternalServerErrorException('Cannot verify access token');
   }
 
-  private async verifyToken<
-    TPayload extends object & { userId: Uuid },
-    TTokenType extends TokenType,
-  >(token: string, tokenType: TTokenType) {
+  private async verifyToken<TPayload extends object & { userId: Uuid }, TTokenType extends TokenType>(
+    token: string,
+    tokenType: TTokenType,
+  ) {
     try {
       const tokenDoc = await this.getToken(token, tokenType);
       const tokenConfig = this.apiConfigService.authConfig[tokenType];
@@ -160,11 +144,7 @@ export class TokenService {
         secret: tokenConfig.secret,
       });
 
-      if (
-        !data.payload ||
-        typeof data.payload === 'string' ||
-        typeof data.payload !== 'object'
-      ) {
+      if (!data.payload || typeof data.payload === 'string' || typeof data.payload !== 'object') {
         throw new UnauthorizedException('Invalid token payload');
       }
 
@@ -197,10 +177,10 @@ export class TokenService {
   }
 
   public async verifyConfirmEmailToken(token: string) {
-    const { payload, token: tokenDoc } = await this.verifyToken<
-      ConfirmEmailPayload,
-      TokenType.CONFIRM_EMAIL
-    >(token, TokenType.CONFIRM_EMAIL);
+    const { payload, token: tokenDoc } = await this.verifyToken<ConfirmEmailPayload, TokenType.CONFIRM_EMAIL>(
+      token,
+      TokenType.CONFIRM_EMAIL,
+    );
 
     await this.revokeToken(tokenDoc.toDto());
 
@@ -212,10 +192,10 @@ export class TokenService {
   }
 
   public async verifyPasswordResetToken(token: string) {
-    const { payload, token: tokenDoc } = await this.verifyToken<
-      PassowrdResetPayload,
-      TokenType.PASSWORD_RESET
-    >(token, TokenType.PASSWORD_RESET);
+    const { payload, token: tokenDoc } = await this.verifyToken<PassowrdResetPayload, TokenType.PASSWORD_RESET>(
+      token,
+      TokenType.PASSWORD_RESET,
+    );
 
     await this.revokeToken(tokenDoc.toDto());
 

@@ -63,7 +63,7 @@ export class UserSeedService {
       company = this.companyMap.get(name);
     } else {
       company = await this.companyRepository.findOne({
-        where: { name: name },
+        where: { name },
       });
     }
     if (!company) {
@@ -80,7 +80,7 @@ export class UserSeedService {
       role = this.roleMap.get(name);
     } else {
       role = await this.roleRepository.findOne({
-        where: { name: name },
+        where: { name },
       });
     }
     if (!role) {
@@ -92,10 +92,7 @@ export class UserSeedService {
 
   private async saveUser(data: (typeof this.users)[number]) {
     try {
-      const [company, role] = await Promise.all([
-        this.getCompany(data.company),
-        this.getRole(data.role),
-      ]);
+      const [company, role] = await Promise.all([this.getCompany(data.company), this.getRole(data.role)]);
       const hashedPassword = await bcrypt.hash(data.password, 10);
 
       let user = await this.userRepository.findOne({
@@ -147,10 +144,7 @@ export class UserSeedService {
       });
 
       if (profile) {
-        await this.profileSettingRepository.update(
-          { userId: user.id },
-          profileData,
-        );
+        await this.profileSettingRepository.update({ userId: user.id }, profileData);
       } else {
         await this.profileSettingRepository.save(profileData);
       }

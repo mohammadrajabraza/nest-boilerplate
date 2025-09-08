@@ -8,13 +8,7 @@ import { HashingService } from './services/hashing.service';
 import { GeneratorService } from './services/generator.service';
 import { AwsS3Service } from './services/aws-s3.service';
 
-const providers: Provider[] = [
-  ApiConfigService,
-  TranslationService,
-  HashingService,
-  GeneratorService,
-  AwsS3Service,
-];
+const providers: Provider[] = [ApiConfigService, TranslationService, HashingService, GeneratorService, AwsS3Service];
 
 @Global()
 @Module({

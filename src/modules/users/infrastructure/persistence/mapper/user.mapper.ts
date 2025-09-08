@@ -1,5 +1,5 @@
-import { CreateUserBodyDto } from '@/modules/users/dtos/body/create-user.dto';
-import { UpdateUserBodyDto } from '@/modules/users/dtos/body/update-user.dto';
+import type { CreateUserBodyDto } from '@/modules/users/dtos/body/create-user.dto';
+import type { UpdateUserBodyDto } from '@/modules/users/dtos/body/update-user.dto';
 import { UserEntity } from '../entities/user.entity';
 import { plainToInstance } from 'class-transformer';
 import { UserResponseDto } from '@/modules/users/dtos/response/user.dto';
@@ -7,25 +7,18 @@ import successMessage from '@/constants/success-message';
 import { HttpStatus } from '@nestjs/common';
 import { ListUserResponseDto } from '@/modules/users/dtos/response/list-user.dto';
 import { BaseResponseMixin } from '@/common/dto/base-response.dto';
-import {
-  IPageMetaDtoParameters,
-  PageMetaDto,
-} from '@/common/dto/page-meta.dto';
+import { type IPageMetaDtoParameters, PageMetaDto } from '@/common/dto/page-meta.dto';
 
 type UserAction = 'CREATE' | 'LIST' | 'GET' | 'UPDATE' | 'DELETE';
 
 class UserMapper {
   public static toDomain<
     TAction extends UserAction,
-    TOptions extends TAction extends 'LIST'
+    TOptions extends TAction extends 'LIST' ? IPageMetaDtoParameters : null = TAction extends 'LIST'
       ? IPageMetaDtoParameters
-      : null = TAction extends 'LIST' ? IPageMetaDtoParameters : null,
+      : null,
   >(
-    user: TAction extends 'LIST'
-      ? UserEntity[]
-      : TAction extends 'DELETE'
-        ? null
-        : UserEntity,
+    user: TAction extends 'LIST' ? UserEntity[] : TAction extends 'DELETE' ? null : UserEntity,
     action: TAction,
     options?: TOptions,
   ) {
@@ -51,10 +44,7 @@ class UserMapper {
     throw new Error('Invalid action');
   }
 
-  public static toPersistence(
-    body: Partial<CreateUserBodyDto | UpdateUserBodyDto>,
-    user: UserEntity | object = {},
-  ) {
+  public static toPersistence(body: Partial<CreateUserBodyDto | UpdateUserBodyDto>, user: UserEntity | object = {}) {
     return plainToInstance(UserEntity, {
       ...user,
       ...body,

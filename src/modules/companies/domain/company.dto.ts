@@ -1,8 +1,5 @@
 import { AbstractDto } from '@/common/dto/abstract.dto';
-import {
-  ClassFieldOptional,
-  StringFieldOptional,
-} from '@/decorators/field.decorator';
+import { ClassFieldOptional, StringFieldOptional } from '@/decorators/field.decorator';
 import type { CompanyEntity } from '../infrastructure/persistence/entities/company.entity';
 import { UserDto } from '@/modules/users/domain/user.dto';
 

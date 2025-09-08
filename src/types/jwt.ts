@@ -1,8 +1,8 @@
-import { RoleType } from '@/constants/role-type';
-import { TokenType } from '@/constants/token-type';
-import { SessionDto } from '@/modules/auth/domain/session.dto';
-import { TokenDto } from '@/modules/token/domain/token.dto';
-import { UserDto } from '@/modules/users/domain/user.dto';
+import type { RoleType } from '@/constants/role-type';
+import type { TokenType } from '@/constants/token-type';
+import type { SessionDto } from '@/modules/auth/domain/session.dto';
+import type { TokenDto } from '@/modules/token/domain/token.dto';
+import type { UserDto } from '@/modules/users/domain/user.dto';
 
 export type JwtPayload = {
   userId: Uuid;

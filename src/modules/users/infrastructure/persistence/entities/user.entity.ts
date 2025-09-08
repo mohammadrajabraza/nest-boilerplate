@@ -1,12 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-  VirtualColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, VirtualColumn } from 'typeorm';
 import { AbstractEntity } from '@/common/abstract.entity';
 import { UseDto } from '@/decorators/use-dto.decorator';
 import type { UserDtoOptions } from '@/modules/users/domain/user.dto';
@@ -51,8 +43,7 @@ export class UserEntity extends AbstractEntity<UserDto, UserDtoOptions> {
   profilePicture: string;
 
   @VirtualColumn({
-    query: (alias) =>
-      `SELECT CONCAT(${alias}.first_name, ' ', ${alias}.last_name)`,
+    query: (alias) => `SELECT CONCAT(${alias}.first_name, ' ', ${alias}.last_name)`,
   })
   fullName!: string;
 
@@ -143,21 +134,12 @@ export class UserEntity extends AbstractEntity<UserDto, UserDtoOptions> {
   sessionDeletors: SessionEntity[];
 
   // Profile Setting creator, updator, deletor
-  @OneToMany(
-    () => ProfileSettingEntity,
-    (profileSetting) => profileSetting.creator,
-  )
+  @OneToMany(() => ProfileSettingEntity, (profileSetting) => profileSetting.creator)
   profileSettingCreators: ProfileSettingEntity[];
 
-  @OneToMany(
-    () => ProfileSettingEntity,
-    (profileSetting) => profileSetting.updator,
-  )
+  @OneToMany(() => ProfileSettingEntity, (profileSetting) => profileSetting.updator)
   profileSettingUpdators: ProfileSettingEntity[];
 
-  @OneToMany(
-    () => ProfileSettingEntity,
-    (profileSetting) => profileSetting.deletor,
-  )
+  @OneToMany(() => ProfileSettingEntity, (profileSetting) => profileSetting.deletor)
   profileSettingDeletors: ProfileSettingEntity[];
 }

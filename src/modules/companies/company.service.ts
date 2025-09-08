@@ -30,9 +30,7 @@ export class CompanyService {
 
   async getCompanyById(id: Uuid, options?: { user?: boolean }) {
     try {
-      let companyQuery = this.companyRepository
-        .createQueryBuilder('company')
-        .where('company.id = :id', { id });
+      let companyQuery = this.companyRepository.createQueryBuilder('company').where('company.id = :id', { id });
 
       // {
       //   where: { id },
@@ -61,9 +59,7 @@ export class CompanyService {
     } catch (error) {
       Logger.error(`Error in companyService.getCompanyById ${error.message}`);
       if (error instanceof HttpException) throw error;
-      throw new InternalServerErrorException(
-        errorMessage.COMPANY.GET_BY_ID_FAILED,
-      );
+      throw new InternalServerErrorException(errorMessage.COMPANY.GET_BY_ID_FAILED);
     }
   }
 
@@ -79,9 +75,7 @@ export class CompanyService {
     } catch (error) {
       Logger.error(`Error in companyService.createCompany ${error.message}`);
       if (error instanceof HttpException) throw error;
-      throw new InternalServerErrorException(
-        errorMessage.COMPANY.CREATION_FAILED,
-      );
+      throw new InternalServerErrorException(errorMessage.COMPANY.CREATION_FAILED);
     }
   }
 
@@ -102,10 +96,7 @@ export class CompanyService {
       }
 
       if (options?.sort && options?.order) {
-        query.orderBy(
-          `company.${options.sort}`,
-          options.order.toUpperCase() as 'ASC' | 'DESC',
-        );
+        query.orderBy(`company.${options.sort}`, options.order.toUpperCase() as 'ASC' | 'DESC');
       }
 
       if (options?.user) {
@@ -150,9 +141,7 @@ export class CompanyService {
     } catch (error) {
       Logger.error(`Error in companyService.findOne ${error.message}`);
       if (error instanceof HttpException) throw error;
-      throw new InternalServerErrorException(
-        errorMessage.COMPANY.FIND_ONE_FAILED,
-      );
+      throw new InternalServerErrorException(errorMessage.COMPANY.FIND_ONE_FAILED);
     }
   }
 
@@ -176,9 +165,7 @@ export class CompanyService {
     } catch (error) {
       Logger.error(`Error in companyService.updateCompany ${error.message}`);
       if (error instanceof HttpException) throw error;
-      throw new InternalServerErrorException(
-        errorMessage.COMPANY.UPDATION_FAILED,
-      );
+      throw new InternalServerErrorException(errorMessage.COMPANY.UPDATION_FAILED);
     }
   }
 
@@ -186,10 +173,7 @@ export class CompanyService {
     const company = await this.getCompanyById(id as Uuid);
 
     try {
-      await this.userRepository.update(
-        { companyId: company.id },
-        { companyId: null },
-      );
+      await this.userRepository.update({ companyId: company.id }, { companyId: null });
       await this.companyRepository.update(
         { id: company.id },
         {
@@ -200,9 +184,7 @@ export class CompanyService {
     } catch (error) {
       Logger.error(`Error in companyService.deleteCompany ${error.message}`);
       if (error instanceof HttpException) throw error;
-      throw new InternalServerErrorException(
-        errorMessage.COMPANY.DELETION_FAILED,
-      );
+      throw new InternalServerErrorException(errorMessage.COMPANY.DELETION_FAILED);
     }
   }
 }
